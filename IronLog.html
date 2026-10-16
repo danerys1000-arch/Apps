@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0E1418">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Iron Log</title>
+<style>
+:root{
+  --bg:#0E1418;
+  --surface:#161F26;
+  --surface-2:#1E2A33;
+  --surface-3:#26343E;
+  --line:#2A3A45;
+  --line-soft:#1F2C35;
+  --text:#E9F0F4;
+  --text-2:#9FB0BC;
+  --text-3:#6B7E8B;
+  --accent:#F2913D;
+  --accent-dim:#8A5423;
+  --accent-soft:rgba(242,145,61,.13);
+  --green:#4ECB86;
+  --green-soft:rgba(78,203,134,.13);
+  --blue:#5AA9E6;
+  --red:#E4635A;
+  --radius:14px;
+  --radius-sm:10px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:15px;line-height:1.45;
+  overscroll-behavior-y:none;
+  padding-bottom:calc(72px + var(--safe-b));
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+button{cursor:pointer;border:none;background:none;padding:0;}
+a{color:var(--accent);}
+
+/* ---------- APP BAR ---------- */
+.appbar{
+  position:sticky;top:0;z-index:40;
+  background:rgba(14,20,24,.92);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line-soft);
+  padding:calc(12px + var(--safe-t)) 16px 12px;
+  display:flex;align-items:center;gap:12px;
+}
+.appbar h1{
+  font-size:19px;font-weight:700;margin:0;letter-spacing:-.3px;flex:1;
+}
+.appbar .sub{font-size:12px;color:var(--text-3);font-weight:500;margin-top:1px;}
+.brand-mark{
+  width:30px;height:30px;border-radius:8px;flex:none;
+  background:linear-gradient(145deg,var(--accent),#C96A22);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:14px;color:#1A1005;letter-spacing:-.5px;
+}
+.icon-btn{
+  width:36px;height:36px;border-radius:10px;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);color:var(--text-2);
+}
+.icon-btn:active{background:var(--surface-3);}
+.icon-btn svg{width:18px;height:18px;}
+
+/* ---------- LAYOUT ---------- */
+.wrap{padding:16px;max-width:680px;margin:0 auto;}
+.view{display:none;}
+.view.active{display:block;animation:fade .18s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.section-label{
+  font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--text-3);margin:22px 0 10px;
+}
+.section-label:first-child{margin-top:0;}
+
+/* ---------- TARJETAS DE RUTINA ---------- */
+.routines{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.rcard{
+  background:var(--surface);border:1px solid var(--line-soft);
+  border-radius:var(--radius);padding:14px;text-align:left;
+  position:relative;overflow:hidden;
+}
+.rcard:active{border-color:var(--accent-dim);}
+.rcard .day{
+  font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:5px;display:block;
+}
+.rcard .nm{font-size:16px;font-weight:700;letter-spacing:-.2px;}
+.rcard .meta{font-size:11.5px;color:var(--text-3);margin-top:3px;}
+.rcard.today{border-color:var(--accent);background:linear-gradient(160deg,var(--accent-soft),var(--surface) 55%);}
+.rcard.today:after{
+  content:"HOY";position:absolute;top:10px;right:10px;
+  font-size:8.5px;font-weight:800;letter-spacing:1px;
+  background:var(--accent);color:#1A1005;padding:2px 6px;border-radius:4px;
+}
+.rcard.wide{grid-column:1/-1;}
+
+/* ---------- TARJETA DE EJERCICIO ---------- */
+.ex{
+  background:var(--surface);border:1px solid var(--line-soft);
+  border-radius:var(--radius);margin-bottom:12px;overflow:hidden;
+}
+.ex.done{border-color:rgba(78,203,134,.35);}
+.ex-top{display:flex;align-items:flex-start;gap:10px;padding:14px 14px 0;}
+.ex-idx{
+  width:24px;height:24px;border-radius:7px;flex:none;
+  background:var(--surface-3);color:var(--text-2);
+  font-size:11.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;margin-top:1px;
+}
+.ex.done .ex-idx{background:var(--green-soft);color:var(--green);}
+.ex-name{flex:1;font-size:15.5px;font-weight:700;letter-spacing:-.2px;line-height:1.3;}
+.ex-muscle{font-size:11px;color:var(--text-3);font-weight:500;margin-top:2px;text-transform:uppercase;letter-spacing:.8px;}
+.info-btn{
+  width:28px;height:28px;border-radius:50%;flex:none;
+  border:1px solid var(--line);color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;font-style:italic;font-family:Georgia,serif;
+}
+.info-btn:active{background:var(--accent);color:#1A1005;border-color:var(--accent);}
+
+.target{
+  display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px 0;
+}
+.chip{
+  font-size:11px;font-weight:600;padding:3.5px 8px;border-radius:6px;
+  background:var(--surface-2);color:var(--text-2);white-space:nowrap;
+}
+.chip b{color:var(--text);font-weight:700;}
+.chip.accent{background:var(--accent-soft);color:var(--accent);}
+
+.last{
+  margin:10px 14px 0;padding:8px 10px;border-radius:var(--radius-sm);
+  background:var(--surface-2);font-size:12px;color:var(--text-2);
+  display:flex;gap:7px;align-items:baseline;
+}
+.last .lb{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);flex:none;}
+.last .lv{font-weight:600;color:var(--text);}
+
+.uplift{
+  margin:10px 14px 0;padding:9px 11px;border-radius:var(--radius-sm);
+  background:var(--green-soft);border:1px solid rgba(78,203,134,.3);
+  font-size:12.5px;color:var(--green);font-weight:600;
+}
+
+.sets{padding:10px 14px 0;}
+.set{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;border-radius:var(--radius-sm);
+  background:var(--surface-2);margin-bottom:6px;
+}
+.set .n{
+  width:20px;height:20px;border-radius:5px;flex:none;
+  background:var(--surface-3);color:var(--text-3);
+  font-size:10.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.set .v{font-size:13.5px;font-weight:600;flex:1;}
+.set .v em{font-style:normal;color:var(--text-3);font-weight:500;}
+.set .rir{
+  font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;
+  background:var(--surface-3);color:var(--text-3);
+}
+.set .del{width:24px;height:24px;color:var(--text-3);font-size:17px;line-height:1;flex:none;}
+
+.ex-actions{display:flex;gap:8px;padding:10px 14px 14px;}
+.btn{
+  flex:1;padding:11px;border-radius:var(--radius-sm);
+  font-size:13.5px;font-weight:700;text-align:center;
+  background:var(--surface-2);color:var(--text);
+}
+.btn:active{background:var(--surface-3);}
+.btn.primary{background:var(--accent);color:#1A1005;}
+.btn.primary:active{background:#D97F2E;}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text-2);}
+.btn.sm{flex:none;padding:11px 14px;}
+.btn.full{width:100%;}
+.btn:disabled{opacity:.4;}
+
+/* ---------- NAV INFERIOR ---------- */
+.nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  background:rgba(14,20,24,.95);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-top:1px solid var(--line-soft);
+  display:flex;padding-bottom:var(--safe-b);
+}
+.nav button{
+  flex:1;padding:9px 4px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--text-3);font-size:10px;font-weight:600;letter-spacing:.2px;
+}
+.nav button svg{width:21px;height:21px;}
+.nav button.on{color:var(--accent);}
+
+/* ---------- MODALES ---------- */
+.sheet-bg{
+  position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.65);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.sheet-bg.on{display:flex;}
+.sheet{
+  background:var(--surface);width:100%;max-width:680px;
+  border-radius:20px 20px 0 0;
+  max-height:92vh;overflow-y:auto;
+  padding:0 0 calc(18px + var(--safe-b));
+  animation:up .22s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.sheet-head{
+  position:sticky;top:0;background:var(--surface);z-index:2;
+  padding:16px 18px 12px;border-bottom:1px solid var(--line-soft);
+  display:flex;align-items:flex-start;gap:12px;
+}
+.sheet-head .grab{
+  position:absolute;top:7px;left:50%;transform:translateX(-50%);
+  width:34px;height:4px;border-radius:2px;background:var(--line);
+}
+.sheet-head h3{margin:4px 0 0;font-size:17px;font-weight:700;flex:1;letter-spacing:-.2px;line-height:1.3;}
+.sheet-head .x{width:30px;height:30px;border-radius:50%;background:var(--surface-2);color:var(--text-2);font-size:17px;flex:none;margin-top:2px;}
+.sheet-body{padding:16px 18px 0;}
+
+.tech-block{margin-bottom:16px;}
+.tech-block .h{
+  font-size:10.5px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:6px;
+}
+.tech-block ul{margin:0;padding-left:17px;}
+.tech-block li{margin-bottom:6px;font-size:14px;color:var(--text-2);line-height:1.5;}
+.tech-block li b{color:var(--text);}
+.tech-note{
+  background:var(--surface-2);border-left:2.5px solid var(--accent);
+  padding:10px 12px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  font-size:12.5px;color:var(--text-2);font-style:italic;margin-bottom:16px;line-height:1.5;
+}
+
+/* ---------- FORMULARIOS ---------- */
+.field{margin-bottom:14px;}
+.field label{
+  display:block;font-size:10.5px;font-weight:700;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--text-3);margin-bottom:6px;
+}
+.field input,.field select,.field textarea{
+  width:100%;padding:12px 13px;border-radius:var(--radius-sm);
+  background:var(--surface-2);border:1px solid var(--line-soft);
+  font-size:16px;font-weight:600;outline:none;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{font-size:14px;font-weight:400;min-height:88px;resize:vertical;line-height:1.5;}
+.field .hint{font-size:11.5px;color:var(--text-3);margin-top:5px;font-weight:400;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+.stepper{display:flex;align-items:stretch;gap:0;}
+.stepper button{
+  width:46px;background:var(--surface-2);border:1px solid var(--line-soft);
+  font-size:20px;font-weight:600;color:var(--text-2);
+}
+.stepper button:first-child{border-radius:var(--radius-sm) 0 0 var(--radius-sm);}
+.stepper button:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.stepper button:active{background:var(--surface-3);}
+.stepper input{
+  flex:1;text-align:center;border-radius:0!important;
+  border-left:none!important;border-right:none!important;
+  font-size:19px!important;font-weight:700!important;
+}
+.pills{display:flex;gap:6px;}
+.pills button{
+  flex:1;padding:11px 0;border-radius:var(--radius-sm);
+  background:var(--surface-2);border:1px solid var(--line-soft);
+  font-size:13.5px;font-weight:700;color:var(--text-2);
+}
+.pills button.on{background:var(--accent);border-color:var(--accent);color:#1A1005;}
+
+/* ---------- LISTAS ---------- */
+.list-item{
+  background:var(--surface);border:1px solid var(--line-soft);
+  border-radius:var(--radius);padding:13px 14px;margin-bottom:9px;
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+}
+.list-item:active{border-color:var(--accent-dim);}
+.list-item .main{flex:1;min-width:0;}
+.list-item .t1{font-size:14.5px;font-weight:700;letter-spacing:-.1px;}
+.list-item .t2{font-size:12px;color:var(--text-3);margin-top:2px;}
+.list-item .r{font-size:12px;color:var(--text-3);text-align:right;flex:none;}
+.list-item .r b{display:block;font-size:15px;color:var(--accent);font-weight:700;}
+
+.empty{
+  text-align:center;padding:48px 24px;color:var(--text-3);
+}
+.empty .big{font-size:38px;margin-bottom:12px;opacity:.5;}
+.empty p{font-size:13.5px;margin:0;line-height:1.6;}
+
+/* ---------- GRÁFICA ---------- */
+.chart-card{
+  background:var(--surface);border:1px solid var(--line-soft);
+  border-radius:var(--radius);padding:16px 14px 12px;margin-bottom:14px;
+}
+.chart-card svg{width:100%;height:170px;display:block;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:14px;}
+.stat{
+  background:var(--surface);border:1px solid var(--line-soft);
+  border-radius:var(--radius-sm);padding:12px 10px;text-align:center;
+}
+.stat .v{font-size:20px;font-weight:800;letter-spacing:-.5px;}
+.stat .l{font-size:9.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-top:3px;}
+.stat.accent .v{color:var(--accent);}
+
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%) translateY(20px);
+  bottom:calc(88px + var(--safe-b));z-index:200;
+  background:var(--surface-3);border:1px solid var(--line);
+  padding:11px 18px;border-radius:30px;font-size:13.5px;font-weight:600;
+  opacity:0;transition:.2s;pointer-events:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:88vw;text-align:center;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.banner{
+  background:var(--surface-2);border:1px solid var(--line-soft);
+  border-radius:var(--radius);padding:13px 14px;margin-bottom:14px;
+  font-size:12.5px;color:var(--text-2);line-height:1.55;
+}
+.banner b{color:var(--text);}
+
+.divider{height:1px;background:var(--line-soft);margin:20px 0;}
+.muted{color:var(--text-3);font-size:12.5px;line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="brand-mark">IL</div>
+  <div style="flex:1;min-width:0">
+    <h1 id="barTitle">Iron Log</h1>
+    <div class="sub" id="barSub">Hipertrofia · Ciclo de superávit</div>
+  </div>
+  <button class="icon-btn" id="btnSettings" aria-label="Ajustes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </button>
+</div>
+
+<div class="wrap">
+  <div class="view active" id="v-train"></div>
+  <div class="view" id="v-hist"></div>
+  <div class="view" id="v-prog"></div>
+  <div class="view" id="v-exs"></div>
+</div>
+
+
+<div class="nav">
+  <button class="on" data-v="train">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/>
+    </svg>Entrenar
+  </button>
+  <button data-v="hist">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>
+    </svg>Historial
+  </button>
+  <button data-v="prog">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 17l5.5-6 4 3.5L21 6"/><path d="M15.5 6H21v5.5"/>
+    </svg>Progreso
+  </button>
+  <button data-v="exs">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M4 6h16M4 12h16M4 18h11"/><circle cx="19" cy="18" r="2.5"/>
+    </svg>Ejercicios
+  </button>
+</div>
+
+<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+/* ==========================================================
+   IRON LOG — datos del plan
+   ========================================================== */
+
+const PLAN_VERSION = 1;
+
+/* Cada ejercicio:
+   id, n(ombre), m(úsculo), s(eries), rm/rM(rango reps), rir, d(escanso s),
+   w(peso de partida, texto), tech[] (bloques de técnica), note(fuente) */
+
+const EX = [
+/* ---------- PUSH ---------- */
+{id:"incline_press",n:"Incline chest press Technogym",m:"Pecho",s:3,rm:6,rM:10,rir:"0-1",d:180,w:"30 kg/lado → 25",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> manos a la altura del pecho, hasta notar estiramiento. Pausa de medio segundo, sin soltar tensión y sin rebotar.",
+   "<b>Arriba:</b> casi extendido, <b>sin bloquear los codos</b>. Si bloqueas, la tensión se va a la articulación."]],
+  ["Tempo",["<b>Bajada:</b> 2-3 segundos.","<b>Subida:</b> rápida pero controlada."]],
+  ["Evitar",["Despegar los hombros del respaldo al empujar."]],
+  ["Series",["1ª serie a 30 kg/lado buscando 6-8. Las dos siguientes a 25 kg/lado buscando 8-10."]]]},
+
+{id:"chest_press_seat",n:"Chest press sentado Technogym",m:"Pecho",s:3,rm:7,rM:12,rir:"1",d:150,w:"30 kg/lado → 25",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> hasta que las manos queden a la altura del pecho o algo por detrás. Pausa de medio segundo.",
+   "<b>Arriba:</b> casi extendido, sin bloquear."]],
+  ["Postura",["<b>Escápulas atrás y abajo</b> todo el recorrido, pecho algo sacado."]],
+  ["Tempo",["<b>Bajada:</b> 2-3 segundos."]],
+  ["Evitar",["Encoger los hombros hacia delante al cerrar."]]]},
+
+{id:"fly_hammer",n:"Aperturas Hammer",m:"Pecho",s:3,rm:10,rM:15,rir:"0",d:90,w:"10 kg/brazo → 7,5",
+ tech:[["Recorrido",[
+   "<b>Abrir:</b> hasta que los codos queden a la altura del torso o muy poco por detrás, donde notes buen estiramiento. Si molesta la parte delantera del hombro, quédate antes.",
+   "<b>Abajo:</b> pausa de 1 segundo. Aquí está el estímulo del ejercicio.",
+   "<b>Al cerrar:</b> junta sin chocar las agarraderas y aprieta el pecho 1 segundo."]],
+  ["El codo",[
+   "Ligeramente flexionado y <b>fijo</b>, como abrazando un barril. No lo estires ni lo dobles más al cerrar, o se convierte en un press.",
+   "A la altura del hombro o algo por debajo, <b>nunca por encima</b>."]],
+  ["Tempo",["<b>Bajada:</b> 2-3 segundos."]]],
+ note:"Peso corregido: con 12,5 kg/brazo solo sacabas 6-7 repeticiones en las series 2 y 3. Con 10 y 7,5 llegas a 10-15 controladas, que es donde este ejercicio rinde."},
+
+{id:"ohp_machine",n:"Press militar máquina, semi neutro",m:"Hombro",s:3,rm:6,rM:10,rir:"1-2",d:150,w:"40-45 kg",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> hasta que las manos queden a la altura de las orejas. No bajes más, que carga el hombro.",
+   "<b>Arriba:</b> casi extendido, sin bloquear.",
+   "<b>Pausa abajo:</b> medio segundo."]],
+  ["Postura",["Agarre semi neutro, que es el que mejor te va. Abdomen apretado y espalda apoyada."]],
+  ["Evitar",["Arquear la lumbar para ayudarte."]]]},
+
+{id:"lat_raise",n:"Elevaciones laterales en polea",m:"Hombro lateral",s:4,rm:12,rM:15,rir:"0-1",d:90,w:"5 kg/lado",
+ tech:[["Recorrido",[
+   "<b>Arriba:</b> hasta la altura del hombro, no más. Codo ligeramente flexionado y fijo.",
+   "<b>Abajo:</b> sin dejar que el brazo descanse contra el cuerpo, mantén la tensión."]],
+  ["Tempo",["<b>Bajada: 3 segundos</b>, muy controlada. Aquí es donde se gana."]],
+  ["Evitar",["Balanceo del torso y encoger el trapecio. Si aparecen, baja el peso."]],
+  ["Progresión",["Sube de 1,25 en 1,25 kg poniendo un disco pequeño sobre la placa. De 5 a 7,5 es un salto del 50%."]]],
+ note:"Peso corregido: 7,5 kg a 8 repeticiones implicaba balanceo y trapecio. El deltoides lateral responde mejor a 12-20 repeticiones con control."},
+
+{id:"tri_pushdown",n:"Extensión tríceps polea alta",m:"Tríceps",s:3,rm:8,rM:12,rir:"0",d:90,w:"25-27,5 kg",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> extensión completa, pausa de medio segundo apretando.",
+   "<b>Arriba:</b> deja que el codo suba hasta notar estiramiento, sin abrir los codos hacia fuera."]],
+  ["Postura",["<b>Codos pegados al cuerpo</b>, solo se mueve el antebrazo."]],
+  ["Tempo",["<b>Vuelta arriba:</b> 2-3 segundos."]],
+  ["Variantes",["Alterna barra y cuerda entre bloques. Si el martes usas una, el sábado usa la otra."]]]},
+
+{id:"tri_katana",n:"Tríceps katana",m:"Tríceps",s:3,rm:10,rM:15,rir:"0",d:90,w:"5 kg",
+ tech:[["Recorrido",[
+   "<b>Arriba:</b> el brazo detrás de la cabeza, hasta notar estiramiento claro en el tríceps. <b>Pausa de 1 segundo.</b> Este es el punto clave del ejercicio.",
+   "<b>Abajo:</b> extiende hasta casi bloquear, aprieta medio segundo."]],
+  ["El codo",["Apuntando al frente y fijo, no se abre."]],
+  ["Evitar",["Mover el hombro o el torso para ayudar."]],
+  ["Ojo",["Si lo haces antes que la extensión en polea, mete una serie ligera de calentamiento: el codo en posición estirada lo agradece."]]]},
+
+/* ---------- PULL ---------- */
+{id:"lat_pulldown",n:"Jalón al pecho con barra (prono)",m:"Espalda",s:3,rm:8,rM:10,rir:"1-2",d:150,w:"60-65 kg",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> la barra hasta la clavícula o justo por debajo. Aprieta 1 segundo llevando los codos hacia las costillas.",
+   "<b>Arriba:</b> extiende del todo y deja que las escápulas suban, notando el estiramiento del dorsal. Sin pausa larga, pero sin rebotar."]],
+  ["Agarre",["Prono, algo más ancho que los hombros."]],
+  ["Tempo",["<b>Vuelta arriba:</b> 2-3 segundos."]],
+  ["Evitar",["Echar el cuerpo hacia atrás para ayudar."]]],
+ note:"Peso corregido: con 70 kg perdías la técnica a partir de la sexta repetición, y eso ya no estimula más dorsal, solo bíceps y balanceo. Sube a 70 cuando saques 10 limpias con 65."},
+
+{id:"chest_row",n:"Remo pecho apoyado, prono",m:"Espalda",s:3,rm:7,rM:12,rir:"1",d:150,w:"50 kg → 40-45",
+ tech:[["Recorrido",[
+   "<b>Tirar:</b> codos abiertos a unos 60-90° del torso, hacia atrás, juntando escápulas. Aprieta 1 segundo.",
+   "<b>Estirar:</b> extiende del todo dejando que las escápulas se separen. Sin pausa larga, sin soltar el peso."]],
+  ["Postura",["<b>Pecho pegado al respaldo</b> todo el rato. Si se despega, el peso sobra."]],
+  ["Tempo",["<b>Vuelta:</b> 2-3 segundos."]]]},
+
+{id:"neutral_pulldown",n:"Jalón agarre neutro estrecho",m:"Espalda",s:3,rm:10,rM:12,rir:"1",d:120,w:"probar",
+ tech:[["Recorrido",[
+   "Igual que el jalón normal, pero con el triángulo o agarre en V.",
+   "<b>Abajo:</b> el agarre hasta el esternón, codos pegados al cuerpo. Más recorrido y más dorsal bajo.",
+   "<b>Aprieta 1 segundo abajo.</b>"]],
+  ["Evitar",["Abrir los codos. Aquí van pegados."]]],
+ note:"Sustituye al dorsal unilateral en polea, que no notabas. La High Row se descartó porque se solapa con el remo con pecho apoyado."},
+
+{id:"rear_delt",n:"Pájaros en máquina",m:"Hombro posterior",s:3,rm:12,rM:15,rir:"0",d:90,w:"probar",
+ tech:[["Recorrido",[
+   "<b>Abrir:</b> hasta la línea del torso, no más atrás. Codos ligeramente flexionados y fijos, a la altura del hombro.",
+   "<b>Atrás:</b> pausa de 1 segundo apretando."]],
+  ["Tempo",["<b>Vuelta:</b> 2-3 segundos, sin dejar que las placas choquen."]],
+  ["Evitar",["Encoger el trapecio o usar impulso. Peso ligero y sensación clara en la parte posterior del hombro."]]]},
+
+{id:"curl_bayesian",n:"Curl Bayesian",m:"Bíceps",s:3,rm:8,rM:12,rir:"0",d:90,w:"7,5-10 kg/brazo",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> el brazo detrás del cuerpo, con la polea baja, hasta notar el bíceps bien estirado. <b>Pausa de 1 segundo.</b> Este es el motivo de hacerlo primero.",
+   "<b>Arriba:</b> flexiona completo y aprieta medio segundo."]],
+  ["El codo",["Fijo y ligeramente detrás del torso, no se adelanta."]],
+  ["Tempo",["<b>Bajada: 3 segundos.</b>"]]]},
+
+{id:"curl_hammer",n:"Curl martillo con cuerda",m:"Bíceps",s:3,rm:10,rM:12,rir:"0",d:90,w:"20 kg",
+ tech:[["Recorrido",[
+   "<b>Arriba:</b> aprieta medio segundo, sin llevar los codos hacia delante.",
+   "<b>Abajo:</b> extensión casi completa, pausa corta manteniendo tensión."]],
+  ["Agarre",["Neutro, pulgares arriba, sin girar la muñeca."]],
+  ["Tempo",["<b>Bajada:</b> 2-3 segundos."]],
+  ["Evitar",["Balancear el torso."]]]},
+
+{id:"shrug",n:"Encogimientos (trapecio)",m:"Trapecio",s:3,rm:12,rM:15,rir:"0-1",d:90,w:"probar",
+ tech:[["Recorrido",[
+   "<b>Arriba:</b> sube recto hacia la oreja, <b>pausa de 1 segundo</b>.",
+   "<b>Abajo:</b> baja despacio hasta notar el estiramiento, 2-3 segundos."]],
+  ["Material",["Con mancuernas o en máquina, brazos colgando a los lados. No con barra por delante."]],
+  ["Evitar",["Rotar los hombros: no aporta nada y carga el cuello."]],
+  ["Ojo",["Empieza con 2 series. Con el trabajo de cargar sacos y bombonas, el trapecio alto ya recibe carga durante la jornada. Si no puedes hacer 12 con pausa arriba, el peso sobra."]]],
+ note:"El shrug produce la mayor activación del trapecio superior de todos los ejercicios estudiados, por encima de elevaciones laterales y remo al mentón."},
+
+/* ---------- PIERNA ---------- */
+{id:"hack_squat",n:"Pendulum hack squat Hammer",m:"Cuádriceps",s:3,rm:8,rM:12,rir:"1-2",d:180,w:"25 kg/lado",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> hasta que el muslo pase de la paralela, dentro de lo que la rodilla acepte bien. Pausa muy corta, <b>sin rebotar</b>.",
+   "<b>Arriba:</b> casi extendido, <b>sin bloquear la rodilla</b>."]],
+  ["Postura",["Talones bien apoyados, rodillas siguiendo la línea de los pies. Rodillera de compresión puesta."]],
+  ["Tempo",["<b>Bajada:</b> 2-3 segundos."]],
+  ["Evitar",["Repeticiones forzadas con ayuda. Si con 25 kg/lado no llegas a 8 solo, baja el peso."]]]},
+
+{id:"leg_curl_seat",n:"Curl femoral sentado",m:"Isquios",s:3,rm:8,rM:12,rir:"0-1",d:120,w:"40 kg",
+ tech:[["Ajuste de la máquina",[
+   "<b>Respaldo hacia delante</b> para apoyar bien la espalda.",
+   "<b>Rodillo del muslo bien apretado.</b> Si queda flojo, la cadera se levanta y la lumbar compensa: esa es la causa de tus molestias.",
+   "Si el respaldo queda lejos, mete una toalla enrollada en la zona lumbar."]],
+  ["Recorrido",[
+   "<b>Flexión:</b> completa, aprieta 1 segundo.",
+   "<b>Extensión:</b> hasta notar el estiramiento del isquio, <b>pausa de 1 segundo</b>."]],
+  ["Tempo",["<b>Vuelta:</b> 3 segundos."]],
+  ["Evitar",["Que la cadera se despegue. Si pasa aun con todo ajustado, baja el peso."]]],
+ note:"El sentado es mejor elección que el tumbado: en el estudio de Maeo (12 semanas), el volumen del isquiosural creció 14,1% sentado frente a 9,3% tumbado, porque la cadera flexionada estira más los isquios biarticulares."},
+
+{id:"leg_ext",n:"Extensión de rodilla Technogym",m:"Cuádriceps",s:3,rm:10,rM:15,rir:"0-1",d:120,w:"60 kg",
+ tech:[["Recorrido",[
+   "<b>Arriba:</b> extensión completa, aprieta 1 segundo.",
+   "<b>Abajo:</b> recorrido completo hasta el estiramiento, sin dejar que las placas choquen."]],
+  ["Tempo",["<b>Bajada: 3 segundos.</b>"]],
+  ["Postura",["Espalda apoyada, manos en las asas, sin despegar el glúteo."]],
+  ["Evitar",["Impulso con el torso en las últimas repeticiones."]]]},
+
+{id:"hip_thrust",n:"Hip thrust Hammer",m:"Glúteo",s:3,rm:10,rM:12,rir:"1",d:150,w:"120 kg",
+ tech:[["Recorrido",[
+   "<b>Arriba:</b> extiende la cadera hasta alinear tronco y muslos, <b>aprieta el glúteo 1-2 segundos</b>. Aquí está el estímulo, no abajo.",
+   "<b>Abajo:</b> controlado, 2 segundos, sin pausa larga ni rebote."]],
+  ["Postura",["Barbilla hacia el pecho y costillas hacia abajo, sin arquear la lumbar arriba."]],
+  ["Evitar",["Hiperextender la espalda para subir más."]],
+  ["Ojo",["Mejor 120 kg a 10-12 que 160 a 8."]]]},
+
+{id:"calf_standing",n:"Gemelo de pie",m:"Gemelo",s:3,rm:15,rM:20,rir:"0",d:90,w:"25-30 kg",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> deja que el talón <b>baje por debajo del escalón</b> hasta notar estiramiento claro. <b>Pausa de 1 segundo.</b> Este es el rango que importa.",
+   "<b>Arriba:</b> sube todo lo que puedas, aprieta medio segundo."]],
+  ["Postura",["<b>Rodilla estirada</b>, no flexionada: es lo que pone al gastrocnemio en tensión."]],
+  ["Tempo",["<b>Bajada:</b> 2-3 segundos."]]],
+ note:"Corregido: antes subías y bajabas solo hasta pie plano. En el estudio de Kassiano (2023), entrenar solo la mitad estirada produjo más hipertrofia que el recorrido completo, y la mitad contraída (la que hacías) fue la peor de las tres."},
+
+{id:"adductor",n:"Aductores (máquina que cierra)",m:"Aductores",s:3,rm:10,rM:15,rir:"0-1",d:90,w:"65 kg",
+ tech:[["Recorrido",[
+   "<b>Cerrar:</b> completo, aprieta 1 segundo.",
+   "<b>Abrir:</b> hasta notar estiramiento cómodo en la ingle, <b>pausa de 1 segundo</b>."]],
+  ["Tempo",["<b>Apertura:</b> 3 segundos."]],
+  ["Evitar",["Abrir de golpe o más de lo que aguantas sin molestia."]]]},
+
+{id:"leg_press",n:"Prensa",m:"Cuádriceps",s:3,rm:8,rM:12,rir:"1-2",d:180,w:"160-180 kg",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> hasta unos 90° de rodilla o algo más, <b>sin que la cadera se despegue del asiento</b>. Ese despegue es lo que carga la lumbar.",
+   "<b>Arriba:</b> casi extendido, <b>sin bloquear la rodilla</b>.",
+   "Pausa corta abajo, sin rebotar."]],
+  ["Postura",["Pies a la anchura de los hombros, en el centro de la plataforma. Rodillera puesta."]],
+  ["Tempo",["<b>Bajada:</b> 2-3 segundos."]],
+  ["Ojo",["160-180 kg con 8-12 repeticiones estimula más que 220 con esfuerzo y menos control."]]]},
+
+{id:"ps_deadlift",n:"Pure Strength Deadlift (como rumano)",m:"Isquios",s:3,rm:8,rM:12,rir:"2",d:180,w:"conservador",
+ tech:[["Cómo ejecutarlo",[
+   "<b>Rodillas poco flexionadas y fijas.</b> El movimiento sale de llevar la <b>cadera hacia atrás</b>, no de doblar la rodilla.",
+   "<b>Abajo:</b> baja solo hasta notar el estiramiento del isquio, aproximadamente a media espinilla.",
+   "<b>No bajes hasta apoyar en el suelo.</b> Si el recorrido te obliga, usa el limitador de recorrido si la máquina lo tiene, o más peso para acortarlo.",
+   "<b>Pausa de 1 segundo</b> abajo, sin rebote.",
+   "<b>Arriba:</b> extiende la cadera y aprieta el glúteo, sin hiperextender la espalda."]],
+  ["Postura",["Espalda recta y pecho abierto todo el recorrido, nunca redondeando la lumbar."]],
+  ["Tempo",["<b>Bajada: 3 segundos.</b>"]],
+  ["Seguridad",[
+   "<b>Nunca al fallo:</b> deja siempre 2 repeticiones.",
+   "Empieza conservador y mira cómo responde la espalda baja al día siguiente.",
+   "<b>Alternativa si la lumbar pide tregua:</b> hiperextensiones a 45°, redondeando algo la espalda alta y subiendo solo hasta la línea del cuerpo."]]],
+ note:"Ejercicio nuevo. Cubre la extensión de cadera, que es donde más se estiran los isquios y lo que faltaba en la semana: antes solo los trabajabas flexionando la rodilla."},
+
+{id:"abductor",n:"Abductores (máquina que abre)",m:"Glúteo medio",s:3,rm:12,rM:15,rir:"0-1",d:90,w:"60-65 kg",
+ tech:[["Recorrido",[
+   "<b>Abrir:</b> completo, aprieta 1 segundo.",
+   "<b>Cerrar:</b> 3 segundos, controlado, sin dejar que las placas choquen."]],
+  ["Para qué",["Trabaja glúteo medio, que es el que la máquina de aductores (la que cierra) no toca."]]]},
+
+/* ---------- UPPER ---------- */
+{id:"flat_hammer",n:"Press plano Hammer tumbado",m:"Pecho",s:3,rm:8,rM:10,rir:"1",d:150,w:"20-22,5 kg/lado",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> hasta que las manos queden a la altura del pecho, pausa de medio segundo.",
+   "<b>Arriba:</b> sin bloquear codos, sin despegar los omóplatos del banco."]],
+  ["Tempo",["<b>Bajada:</b> 2-3 segundos."]]],
+ note:"Peso corregido: con 30 kg/lado sacabas 4-5 repeticiones, que es poco para hipertrofia. Empieza en 20-22,5 y busca 8-10."},
+
+{id:"pulldown_supine",n:"Jalón agarre neutro o supino",m:"Espalda",s:3,rm:8,rM:12,rir:"1",d:150,w:"55-60 kg",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> a la parte alta del abdomen, codos pegados al cuerpo, aprieta 1 segundo.",
+   "<b>Arriba:</b> extensión completa con estiramiento del dorsal."]],
+  ["Agarre",["Supino (palmas hacia ti) o neutro, a la anchura de los hombros."]],
+  ["Ojo",["Con agarre supino el bíceps participa más, así que moverás algo más de peso. Es normal."]]]},
+
+{id:"incline_press_sat",n:"Incline chest press Technogym (sábado)",m:"Pecho",s:3,rm:8,rM:12,rir:"1",d:150,w:"25 kg/lado",
+ tech:[["Diferencia con el martes",[
+   "Mismo ejercicio, otro esquema: <b>series rectas con el mismo peso</b>, 8-12 repeticiones, en lugar de la pirámide pesada del martes.",
+   "Va <b>el primero del día</b> para priorizar la parte alta del pecho."]],
+  ["Recorrido",[
+   "<b>Abajo:</b> manos a la altura del pecho, hasta notar estiramiento. Pausa de medio segundo, sin rebotar.",
+   "<b>Arriba:</b> casi extendido, <b>sin bloquear los codos</b>."]],
+  ["Tempo",["<b>Bajada:</b> 2-3 segundos."]],
+  ["Evitar",["Despegar los hombros del respaldo al empujar."]]],
+ note:"Sustituye al wide chest press. El sábado tenía dos presses horizontales y la parte alta del pecho solo se trabajaba 3 series a la semana. El press inclinado a 30-45° es el que más desarrolla la porción clavicular."},
+
+{id:"wide_chest_press",n:"Wide chest press Technogym",m:"Pecho",s:3,rm:8,rM:12,rir:"1",d:150,w:"35-40 kg/lado",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> hasta el estiramiento, pausa corta.",
+   "<b>Arriba:</b> sin bloquear."]],
+  ["Agarre",["Neutro."]],
+  ["Ojo",["Es la máquina que te resulta más fácil, así que no tengas miedo de cargarla, pero mantén las 8-12 repeticiones."]]]},
+
+{id:"dy_row",n:"Isolateral D.Y. Row / High Row Hammer",m:"Espalda",s:3,rm:8,rM:12,rir:"1",d:150,w:"probar",
+ tech:[["Según cuál uses",[
+   "<b>D.Y. Row:</b> tira hacia la cadera con los <b>codos pegados</b> al cuerpo. Aprieta 1 segundo atrás. Es remo horizontal puro.",
+   "<b>High Row:</b> aquí sí van los <b>codos abiertos</b>, tirando en diagonal hacia arriba y atrás. Trabaja espalda alta."]],
+  ["Al ser isolateral",[
+   "Haz los dos lados con el mismo número de repeticiones, marcadas por el lado débil.",
+   "Empieza suave: en isolateral el peso que se mueve suele ser bastante menos del que uno espera."]],
+  ["Recorrido",["Estira del todo al final de cada repetición, dejando que la escápula se desplace."]]]},
+
+{id:"curl_preacher",n:"Curl predicador",m:"Bíceps",s:3,rm:8,rM:12,rir:"0",d:90,w:"25 kg",
+ tech:[["Recorrido",[
+   "<b>Abajo:</b> extensión casi completa, hasta notar el estiramiento. <b>Pausa de 1 segundo</b>, sin llegar a bloquear el codo del todo.",
+   "<b>Arriba:</b> aprieta 1 segundo."]],
+  ["Tempo",["<b>Bajada: 3 segundos.</b> Es donde más se gana en este ejercicio."]],
+  ["Postura",["Axilas pegadas al respaldo, sin despegar para ayudarte."]],
+  ["Ojo",["Con 25 kg dominas bien. Los 30 con 5-6 repeticiones son demasiado para este ejercicio."]]]},
+
+/* ---------- CORE ---------- */
+{id:"plank",n:"Plancha frontal",m:"Core",s:3,rm:30,rM:45,rir:"—",d:60,w:"segundos",
+ tech:[["Cómo",[
+   "Costillas hacia abajo y glúteo apretado, sin arquear la lumbar.",
+   "Mejor 30 segundos bien que 60 hundido."]],
+  ["Registro",["Apunta los segundos en el campo de repeticiones y deja el peso a 0."]]]},
+
+{id:"cable_crunch",n:"Crunch en polea alta de rodillas",m:"Core",s:3,rm:12,rM:15,rir:"0",d:60,w:"probar",
+ tech:[["Cómo",[
+   "Redondea la espalda llevando las costillas hacia la pelvis.",
+   "No es un movimiento de cadera: si tiras con los brazos o la cadera, no trabaja el abdomen.",
+   "Pausa de 1 segundo en la máxima contracción."]]]},
+
+{id:"pallof",n:"Pallof press en polea",m:"Core",s:2,rm:10,rM:12,rir:"0-1",d:60,w:"probar",
+ tech:[["Cómo",[
+   "De pie, perpendicular a la polea. Extiendes los brazos al frente resistiendo la rotación.",
+   "Aguanta 2 segundos con los brazos extendidos.",
+   "Es el que más transfiere a cargar peso en el trabajo."]]]}
+];
+
+/* ---------- RUTINAS ---------- */
+const ROUTINES = [
+ {id:"push",   n:"Push",   day:"Martes",    dow:2, focus:"Pecho · Hombro · Tríceps",
+  ex:["incline_press","chest_press_seat","fly_hammer","ohp_machine","lat_raise","tri_pushdown","tri_katana"]},
+ {id:"pull",   n:"Pull",   day:"Miércoles", dow:3, focus:"Espalda · Posterior · Bíceps · Trapecio",
+  ex:["lat_pulldown","chest_row","neutral_pulldown","rear_delt","curl_bayesian","curl_hammer","shrug"]},
+ {id:"legs",   n:"Pierna", day:"Jueves",    dow:4, focus:"Énfasis cuádriceps",
+  ex:["hack_squat","leg_curl_seat","leg_ext","hip_thrust","calf_standing","adductor"]},
+ {id:"upper",  n:"Upper",  day:"Sábado",    dow:6, focus:"Torso completo, otros ángulos",
+  ex:["incline_press_sat","pulldown_supine","flat_hammer","dy_row","lat_raise","rear_delt","curl_preacher","tri_pushdown"]},
+ {id:"lower",  n:"Lower",  day:"Domingo",   dow:0, focus:"Énfasis cadera e isquios",
+  ex:["leg_press","ps_deadlift","leg_curl_seat","hip_thrust","calf_standing","abductor"]},
+ {id:"core",   n:"Core",   day:"Opcional",  dow:-1, focus:"6-8 min al final de push o upper",
+  ex:["plank","cable_crunch","pallof"]},
+ {id:"padel",  n:"Pádel",  day:"Sábados",   dow:-1, focus:"Sesión registrada aparte", ex:[]}
+];
+</script>
+<script>
+/* ==========================================================
+   ESTADO Y ALMACENAMIENTO
+   ========================================================== */
+let DB=null /* sin servidor */, custom=[], sessions=[], current=null, overrides={}, timerH=null, timerEnd=0;
+
+const LS="ironlog_v1";
+const $=id=>document.getElementById(id);
+const byId=id=>[...EX,...custom].find(e=>e.id===id);
+const todayKey=()=>new Date().toISOString().slice(0,10);
+function clone(o){ try{ return JSON.parse(JSON.stringify(o)); }catch(e){ return o; } }
+
+let LAST_ERR=[];
+function report(e,where){
+  const msg=(e&&e.message)?e.message:String(e);
+  LAST_ERR.unshift({w:where||"?",m:msg,t:new Date().toLocaleTimeString("es-ES")});
+  LAST_ERR=LAST_ERR.slice(0,8);
+  console.error(where,e);
+  toast("Fallo en "+(where||"la app")+": "+msg);
+}
+window.addEventListener("error",ev=>report(ev.error||ev.message,"carga"));
+window.addEventListener("unhandledrejection",ev=>report(ev.reason,"servidor"));
+
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2100);}
+function esc(s){return String(s||"").replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));}
+function fmtW(w){return (Math.round(w*100)/100).toString().replace(".",",");}
+function fmtDate(d){
+  const dt=new Date(d+"T12:00:00");
+  return dt.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"});
+}
+
+const SEMILLA = {"v": 1, "custom": [], "overrides": {"upper": ["incline_press_sat", "pulldown_supine", "chest_press_seat", "chest_row", "lat_raise", "rear_delt", "curl_preacher", "tri_pushdown"]}, "current": null, "sessions": [{"date": "2026-09-26", "ended": 1790446519751, "id": 1790445628155, "name": "Upper", "routine": "upper", "started": 1790445628166, "entries": [{"ex": "incline_press_sat", "sets": [{"r": 15, "rir": "0", "w": 20}, {"r": 10, "rir": "2", "w": 40}, {"r": 8, "rir": "0", "w": 60}, {"r": 10, "rir": "1", "w": 50}, {"r": 10, "rir": "1", "w": 50}]}, {"ex": "pulldown_supine", "sets": [{"r": 12, "rir": "2", "w": 40}, {"r": 10, "rir": "1", "w": 55}, {"r": 8, "rir": "1", "w": 65}, {"r": 8, "rir": "1", "w": 65}, {"r": 8, "rir": "1", "w": 60}]}, {"ex": "chest_press_seat", "sets": [{"r": 15, "rir": "0", "w": 40}, {"r": 8, "rir": "0", "w": 65}, {"r": 10, "rir": "0", "w": 60}, {"r": 9, "rir": "0", "w": 60}]}, {"ex": "chest_row", "sets": [{"r": 12, "rir": "3+", "w": 20}, {"r": 8, "rir": "1", "w": 45}, {"r": 8, "rir": "1", "w": 45}, {"r": 8, "rir": "1", "w": 45}]}, {"ex": "lat_raise", "sets": [{"r": 30, "rir": "0", "w": 5}, {"r": 30, "rir": "0", "w": 5}, {"r": 24, "rir": "0", "w": 5}]}, {"ex": "rear_delt", "sets": [{"r": 10, "rir": "2", "w": 15}, {"r": 10, "rir": "2", "w": 15}, {"r": 10, "rir": "2", "w": 15}]}, {"ex": "curl_preacher", "sets": [{"r": 10, "rir": "2", "w": 20}, {"r": 8, "rir": "0", "w": 30}, {"r": 8, "rir": "1", "w": 25}, {"r": 8, "rir": "1", "w": 25}]}, {"ex": "tri_pushdown", "sets": [{"r": 15, "rir": "1", "w": 20}, {"r": 12, "rir": "2", "w": 22.5}, {"r": 12, "rir": "2", "w": 22.5}]}]}, {"date": "2026-09-29", "ended": 1790705928887, "id": 1790703008519, "name": "Push", "routine": "push", "started": 1790703008519, "entries": [{"ex": "incline_press", "sets": [{"r": 10, "rir": "1", "w": 40}, {"r": 7, "rir": "0", "w": 60}, {"r": 10, "rir": "0", "w": 50}, {"r": 9, "rir": "0", "w": 50}]}, {"ex": "chest_press_seat", "sets": [{"r": 8, "rir": "0", "w": 65}, {"r": 10, "rir": "0", "w": 60}, {"r": 9, "rir": "0", "w": 60}]}, {"ex": "fly_hammer", "sets": [{"r": 10, "rir": "1", "w": 20}, {"r": 10, "rir": "1", "w": 20}, {"r": 8, "rir": "1", "w": 20}]}, {"ex": "ohp_machine", "sets": [{"r": 10, "rir": "2", "w": 30}, {"r": 8, "rir": "1", "w": 40}, {"r": 5, "rir": "0", "w": 45}]}, {"ex": "lat_raise", "sets": [{"r": 24, "rir": "2", "w": 5}, {"r": 24, "rir": "0", "w": 5}, {"r": 20, "rir": "0", "w": 5}]}, {"ex": "tri_pushdown", "sets": [{"r": 15, "rir": "2", "w": 20}, {"r": 12, "rir": "1", "w": 22.5}, {"r": 15, "rir": "0", "w": 20}]}, {"ex": "tri_katana", "sets": [{"r": 24, "rir": "0", "w": 5}, {"r": 20, "rir": "0", "w": 5}]}]}, {"date": "2026-09-30", "ended": 1790791399952, "id": 1790788917017, "name": "Pull", "routine": "pull", "started": 1790788917017, "entries": [{"ex": "lat_pulldown", "sets": [{"r": 12, "rir": "2", "w": 40}, {"r": 10, "rir": "2", "w": 50}, {"r": 10, "rir": "1", "w": 60}, {"r": 9, "rir": "1", "w": 55}, {"r": 9, "rir": "1", "w": 55}]}, {"ex": "chest_row", "sets": [{"r": 12, "rir": "1", "w": 40}, {"r": 11, "rir": "1", "w": 45}, {"r": 11, "rir": "1", "w": 45}]}, {"ex": "neutral_pulldown", "sets": [{"r": 12, "rir": "2", "w": 50}, {"r": 8, "rir": "1", "w": 60}, {"r": 10, "rir": "1", "w": 55}]}, {"ex": "rear_delt", "sets": [{"r": 12, "rir": "1", "w": 15}, {"r": 12, "rir": "1", "w": 15}, {"r": 12, "rir": "1", "w": 15}]}, {"ex": "curl_bayesian", "sets": [{"r": 24, "rir": "2", "w": 7.5}, {"r": 24, "rir": "2", "w": 7.5}, {"r": 24, "rir": "2", "w": 7.5}]}, {"ex": "curl_hammer", "sets": [{"r": 10, "rir": "0", "w": 17.5}, {"r": 10, "rir": "1", "w": 15}, {"r": 10, "rir": "1", "w": 15}]}, {"ex": "shrug", "sets": [{"r": 12, "rir": "2", "w": 10}, {"r": 10, "rir": "2", "w": 12.5}, {"r": 8, "rir": "2", "w": 15}]}]}, {"date": "2026-10-02", "ended": 1791044301371, "id": 1790971548230, "name": "Pierna", "routine": "legs", "started": 1790971548230, "entries": [{"ex": "leg_press", "sets": [{"r": 12, "rir": "2", "w": 80}, {"r": 10, "rir": "1", "w": 120}, {"r": 10, "rir": "0", "w": 200}, {"r": 9, "rir": "0", "w": 200}, {"r": 10, "rir": "1", "w": 180}]}, {"ex": "hip_thrust", "sets": [{"r": 10, "rir": "1", "w": 60}]}]}]};
+
+function boot(){
+  load();
+  renderTrain(); bindNav();
+}
+
+/* Todo se guarda en este navegador. La primera vez carga el historial que ya tenías. */
+function load(){
+  let data=null;
+  try{
+    const raw=localStorage.getItem(LS);
+    if(raw) data=JSON.parse(raw);
+  }catch(e){ console.warn("localStorage",e); }
+
+  if(!data){
+    data=clone(SEMILLA);
+    try{ localStorage.setItem(LS,JSON.stringify(data)); }catch(e){}
+  }
+
+  custom=data.custom||[]; sessions=data.sessions||[]; overrides=data.overrides||{};
+  current=data.current||null;
+  if(current===false) current=null;
+}
+
+function snapshotData(){ return {v:PLAN_VERSION,custom:custom||[],sessions:sessions||[],overrides:overrides||{},current:current||false,at:Date.now()}; }
+
+function save(){
+  try{ localStorage.setItem(LS,JSON.stringify(snapshotData())); }
+  catch(e){ console.warn("localStorage",e); toast("No se pudo guardar: memoria del navegador llena"); }
+}
+function flush(){ save(); }
+
+/* Guardar antes de que el navegador congele o cierre la pestaña */
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") save(); });
+window.addEventListener("pagehide",save);
+
+
+/* ==========================================================
+   NAVEGACIÓN
+   ========================================================== */
+function bindNav(){
+  document.querySelectorAll(".nav button").forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("on"));
+      b.classList.add("on");
+      document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+      const v=b.dataset.v; $("v-"+v).classList.add("active");
+      window.scrollTo(0,0);
+      if(v==="train")renderTrain(); if(v==="hist")renderHist();
+      if(v==="prog")renderProg(); if(v==="exs")renderExs();
+    };
+  });
+  $("btnSettings").onclick=openSettings;
+  
+  $("sheetBg").onclick=e=>{ if(e.target===$("sheetBg")) closeSheet(); };
+}
+
+function openSheet(html){ $("sheet").innerHTML=html; $("sheetBg").classList.add("on"); $("sheet").scrollTop=0; }
+function closeSheet(){ $("sheetBg").classList.remove("on"); }
+function sheetHead(title){
+  return `<div class="sheet-head"><div class="grab"></div><h3>${title}</h3>
+    <button class="x" onclick="closeSheet()">✕</button></div>`;
+}
+
+/* ==========================================================
+   PANTALLA: ENTRENAR
+   ========================================================== */
+function renderTrain(){
+  const v=$("v-train");
+  if(current){ renderSession(); return; }
+  const dow=new Date().getDay();
+  const done=sessions.filter(s=>s.date===todayKey());
+  v.innerHTML=`
+    ${done.length?`<div class="banner">✓ Hoy ya has registrado <b>${done.map(s=>esc(s.name)).join(", ")}</b>. Puedes entrenar otra sesión si quieres.</div>`:""}
+    <div class="section-label">Elige la sesión</div>
+    <div class="routines">
+      ${ROUTINES.map(r=>`
+        <button class="rcard ${r.dow===dow?"today":""} ${r.id==="padel"||r.id==="core"?"":""}"
+                onclick="startSession('${r.id}')">
+          <span class="day">${esc(r.day)}</span>
+          <div class="nm">${esc(r.n)}</div>
+          <div class="meta">${routineList(r.id).length?routineList(r.id).length+" ejercicios":"Sesión libre"}${overrides[r.id]?" · editada":""}</div>
+        </button>`).join("")}
+    </div>
+    <div class="section-label">Resumen del ciclo</div>
+    <div class="banner">
+      <b>Básicos:</b> deja 1-2 repeticiones en la recámara.<br>
+      <b>Aislamientos:</b> puedes llegar al fallo.<br>
+      <b>Deadlift:</b> siempre 2 en recámara, nunca al fallo.<br>
+      <b>Progresión:</b> cuando llegues al tope del rango en todas las series, sube peso.
+    </div>`;
+}
+
+function startSession(rid){
+  const r=ROUTINES.find(x=>x.id===rid);
+  if(rid==="padel"){
+    current={id:Date.now(),date:todayKey(),routine:"padel",name:"Padel",type:"padel",
+             minutes:90,intensity:"medio",entries:[]};
+    save(); renderPadel(); return;
+  }
+  current={id:Date.now(),date:todayKey(),routine:rid,name:r.n,started:Date.now(),
+           entries:routineList(rid).map(id=>({ex:id,sets:[]}))};
+  save(); renderSession();
+}
+
+/* Lista de ejercicios de una rutina: la personalizada si la hay, si no la de fábrica */
+function routineList(rid){
+  const r=ROUTINES.find(x=>x.id===rid);
+  const ov=overrides&&overrides[rid];
+  return (Array.isArray(ov)&&ov.length)?ov.slice():(r?r.ex.slice():[]);
+}
+function setRoutineList(rid,list){ overrides[rid]=list.slice(); save(); }
+
+function lastFor(exId,excludeId){
+  for(let i=sessions.length-1;i>=0;i--){
+    const s=sessions[i]; if(s.id===excludeId) continue;
+    const e=(s.entries||[]).find(x=>x.ex===exId && x.sets.length);
+    if(e) return {date:s.date,sets:e.sets};
+  }
+  return null;
+}
+
+function renderSession(){
+  if(current.type==="padel"){ renderPadel(); return; }
+  const v=$("v-train"), r=ROUTINES.find(x=>x.id===current.routine);
+  const total=current.entries.reduce((a,e)=>a+e.sets.length,0);
+  v.innerHTML=`
+    <div class="banner" style="display:flex;align-items:center;gap:11px">
+      <button class="icon-btn" onclick="exitSession()" aria-label="Volver">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:17px;font-weight:700;color:var(--text)">${esc(current.name)}</div>
+        <button onclick="pickDate()" style="font-size:12px;color:var(--text-3);margin-top:2px;text-align:left;display:block">
+          ${fmtDate(current.date)}${current.date!==todayKey()?' <span style="color:var(--accent)">· cambiada</span>':""} ✎ · ${total} series
+        </button>
+      </div>
+      <button class="btn sm ghost" onclick="addExToSession()">+ Ejercicio</button>
+    </div>
+    ${current.entries.map((e,i)=>exCard(e,i)).join("")}
+    <button class="btn full primary" style="margin-top:6px" onclick="finishSession()">Terminar sesión</button>
+    <button class="btn full ghost" style="margin-top:9px" onclick="cancelSession()">Descartar</button>
+    <div style="height:20px"></div>`;
+}
+
+function exCard(entry,i){
+  const e=byId(entry.ex); if(!e) return "";
+  const last=lastFor(entry.ex,current.id);
+  const done=entry.sets.length>=e.s;
+  let uplift="";
+  if(entry.sets.length>=e.s && e.rM>0){
+    const all=entry.sets.slice(0,e.s).every(s=>s.r>=e.rM);
+    if(all) uplift=`<div class="uplift">↑ Has llegado al tope del rango en todas las series. Toca subir peso el próximo día.</div>`;
+  }
+  return `
+  <div class="ex ${done?"done":""}">
+    <div class="ex-top">
+      <div class="ex-idx">${done?"✓":i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div class="ex-name">${esc(e.n)}</div>
+        <div class="ex-muscle">${esc(e.m)}</div>
+      </div>
+      <button class="info-btn" onclick="showTech('${e.id}')">i</button>
+      <button class="info-btn" style="font-family:inherit;font-style:normal;letter-spacing:1px"
+              onclick="exMenu(${current.entries.indexOf(entry)})">···</button>
+    </div>
+    <div class="target">
+      <span class="chip"><b>${e.s}</b> series</span>
+      <span class="chip"><b>${e.rm}-${e.rM}</b> reps</span>
+      <span class="chip">RIR <b>${esc(e.rir)}</b></span>
+      <span class="chip">${e.d>=60?Math.round(e.d/60*10)/10+" min":e.d+" s"}</span>
+      ${e.w?`<span class="chip accent">${esc(e.w)}</span>`:""}
+    </div>
+    ${last?`<div class="last"><span class="lb">Último</span>
+      <span class="lv">${last.sets.map(s=>`${fmtW(s.w)}×${s.r}`).join(" · ")}</span></div>`:""}
+    ${uplift}
+    ${entry.sets.length?`<div class="sets">${entry.sets.map((s,j)=>`
+      <div class="set">
+        <div class="n">${j+1}</div>
+        <div class="v">${fmtW(s.w)} kg <em>×</em> ${s.r} <em>reps</em></div>
+        ${s.rir!==""&&s.rir!=null?`<span class="rir">RIR ${esc(s.rir)}</span>`:""}
+        <button class="del" onclick="delSet(${current.entries.indexOf(entry)},${j})">×</button>
+      </div>`).join("")}</div>`:""}
+    <div class="ex-actions">
+      <button class="btn primary" onclick="addSet(${current.entries.indexOf(entry)})">+ Añadir serie</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- registrar serie ---------- */
+function addSet(ei){
+  const entry=current.entries[ei], e=byId(entry.ex);
+  const last=entry.sets.length?entry.sets[entry.sets.length-1]:null;
+  const prev=lastFor(entry.ex,current.id);
+  const w=last?last.w:(prev?prev.sets[0].w:0);
+  const r=last?last.r:(prev?prev.sets[0].r:e.rm);
+  openSheet(`${sheetHead("Serie "+(entry.sets.length+1)+" · "+esc(e.n))}
+  <div class="sheet-body">
+    <div class="banner" style="margin-bottom:16px">
+      Objetivo: <b>${e.rm}-${e.rM} repeticiones</b> con RIR <b>${esc(e.rir)}</b>
+      ${prev?`<br>Último día: <b>${prev.sets.map(s=>fmtW(s.w)+"×"+s.r).join(" · ")}</b>`:""}
+    </div>
+    <div class="field">
+      <label>Peso (kg)</label>
+      <div class="stepper">
+        <button onclick="stp('sw',-1.25)">−</button>
+        <input id="sw" type="number" inputmode="decimal" step="0.25" value="${w}">
+        <button onclick="stp('sw',1.25)">+</button>
+      </div>
+      <div class="hint">Usa un disco de 1,25 kg sobre la placa en laterales, bíceps y katana.</div>
+    </div>
+    <div class="field">
+      <label>Repeticiones</label>
+      <div class="stepper">
+        <button onclick="stp('sr',-1)">−</button>
+        <input id="sr" type="number" inputmode="numeric" step="1" value="${r}">
+        <button onclick="stp('sr',1)">+</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Repeticiones en recámara</label>
+      <div class="pills" id="rirPills">
+        ${["0","1","2","3+"].map((x,k)=>`<button onclick="pickRir(this,'${x}')" class="${k===0?"on":""}">${x}</button>`).join("")}
+      </div>
+    </div>
+    <button class="btn full primary" onclick="saveSet(${ei})">Guardar serie</button>
+    <div style="height:10px"></div>
+  </div>`);
+  window._rir="0";
+}
+function stp(id,d){const el=$(id);let v=parseFloat(el.value||0)+d;if(v<0)v=0;el.value=Math.round(v*100)/100;}
+function pickRir(b,v){document.querySelectorAll("#rirPills button").forEach(x=>x.classList.remove("on"));b.classList.add("on");window._rir=v;}
+
+function saveSet(ei){
+  try{
+    const w=parseFloat($("sw").value)||0;
+    const r=parseInt($("sr").value)||0;
+    if(!r){ toast("Pon las repeticiones"); return; }
+    const entry=current&&current.entries&&current.entries[ei];
+    if(!entry){ toast("No encuentro el ejercicio"); return; }
+    entry.sets.push({w,r,rir:window._rir||""});
+    closeSheet();
+    renderSession();
+    save();
+  }catch(err){
+    console.error("saveSet",err);
+    toast("Error al guardar: "+(err&&err.message?err.message:err));
+  }
+}
+function delSet(ei,j){ current.entries[ei].sets.splice(j,1); save(); renderSession(); }
+
+/* ---------- fecha de la sesión ---------- */
+function shiftDay(n){
+  const d=new Date(); d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+function pickDate(sessionId){
+  const actual=sessionId?(sessions.find(x=>x.id===sessionId)||{}).date:current.date;
+  const opciones=[["Hoy",shiftDay(0)],["Ayer",shiftDay(-1)],["Anteayer",shiftDay(-2)],["Mañana",shiftDay(1)]];
+  openSheet(`${sheetHead("Fecha del entrenamiento")}
+  <div class="sheet-body">
+    <div class="pills" style="flex-wrap:wrap;gap:6px;margin-bottom:16px">
+      ${opciones.map(([n,d])=>`<button style="flex:1 1 45%" class="${d===actual?"on":""}"
+        onclick="setDate('${d}',${sessionId||0})">${n}</button>`).join("")}
+    </div>
+    <div class="field">
+      <label>Otra fecha</label>
+      <input id="dtPick" type="date" value="${actual}" max="${shiftDay(1)}">
+    </div>
+    <button class="btn full primary" onclick="setDate($('dtPick').value,${sessionId||0})">Guardar fecha</button>
+    <div style="height:10px"></div>
+  </div>`);
+}
+function setDate(d,sessionId){
+  if(!d) return;
+  if(sessionId){
+    const ses=sessions.find(x=>x.id===sessionId);
+    if(ses) ses.date=d;
+    save(); closeSheet(); renderHist(); toast("Fecha cambiada");
+  }else{
+    current.date=d; save(); closeSheet(); renderSession(); toast("Fecha cambiada");
+  }
+}
+
+/* ---------- cambiar, quitar o mover un ejercicio ---------- */
+function exMenu(ei){
+  const entry=current.entries[ei], e=byId(entry.ex);
+  const n=current.entries.length;
+  openSheet(`${sheetHead(esc(e?e.n:"Ejercicio"))}
+  <div class="sheet-body">
+    ${entry.sets.length?`<div class="banner">Tiene <b>${entry.sets.length} serie${entry.sets.length>1?"s":""}</b> registrada${entry.sets.length>1?"s":""}. Si lo cambias o lo quitas, se pierden.</div>`:""}
+    <button class="btn full primary" onclick="pickSwap(${ei})">Cambiar por otro ejercicio</button>
+    <div style="height:9px"></div>
+    <div class="row2">
+      <button class="btn" ${ei===0?"disabled":""} onclick="moveEx(${ei},-1)">↑ Subir</button>
+      <button class="btn" ${ei===n-1?"disabled":""} onclick="moveEx(${ei},1)">↓ Bajar</button>
+    </div>
+    <div style="height:9px"></div>
+    <button class="btn full ghost" onclick="removeEx(${ei})">Quitar de la sesión</button>
+    <div style="height:10px"></div>
+  </div>`);
+}
+
+function pickSwap(ei){
+  const all=[...EX,...custom], actual=current.entries[ei].ex;
+  const groups={}; all.forEach(x=>{(groups[x.m]=groups[x.m]||[]).push(x);});
+  openSheet(`${sheetHead("Cambiar por…")}
+  <div class="sheet-body">
+    ${Object.entries(groups).map(([m,list])=>`
+      <div class="section-label">${esc(m)}</div>
+      ${list.map(x=>`<button class="list-item" ${x.id===actual?"disabled style=opacity:.4":""}
+        onclick="doSwap(${ei},'${x.id}')">
+        <div class="main"><div class="t1">${esc(x.n)}</div>
+        <div class="t2">${x.s} series · ${x.rm}-${x.rM} reps</div></div></button>`).join("")}`).join("")}
+    <div style="height:10px"></div>
+  </div>`);
+}
+
+let _pending=null;
+function doSwap(ei,newId){
+  _pending={ei,newId};
+  scopeSheet("Cambiar ejercicio","applySwap");
+}
+function removeEx(ei){ _pending={ei}; scopeSheet("Quitar ejercicio","applyRemove"); }
+
+function scopeSheet(titulo,fnName){
+  const r=ROUTINES.find(x=>x.id===current.routine);
+  openSheet(`${sheetHead(esc(titulo))}
+  <div class="sheet-body">
+    <p class="muted" style="margin-bottom:14px">¿Solo para el entrenamiento de hoy, o fijo en la rutina de <b>${esc(r?r.n:"")}</b> para los próximos días?</p>
+    <button class="btn full primary" onclick="${fnName}(true)">Siempre · cambiar la rutina</button>
+    <div style="height:9px"></div>
+    <button class="btn full" onclick="${fnName}(false)">Solo hoy</button>
+    <div style="height:10px"></div>
+  </div>`);
+}
+
+function applySwap(always){
+  const {ei,newId}=_pending||{}; if(ei==null) return;
+  current.entries[ei]={ex:newId,sets:[]};
+  if(always) setRoutineList(current.routine,current.entries.map(x=>x.ex));
+  _pending=null; save(); closeSheet(); renderSession();
+  toast(always?"Cambiado en la rutina":"Cambiado solo por hoy");
+}
+function applyRemove(always){
+  const {ei}=_pending||{}; if(ei==null) return;
+  current.entries.splice(ei,1);
+  if(always) setRoutineList(current.routine,current.entries.map(x=>x.ex));
+  _pending=null; save(); closeSheet(); renderSession();
+  toast(always?"Quitado de la rutina":"Quitado solo por hoy");
+}
+function moveEx(ei,dir){
+  const j=ei+dir; if(j<0||j>=current.entries.length) return;
+  const a=current.entries;[a[ei],a[j]]=[a[j],a[ei]];
+  setRoutineList(current.routine,a.map(x=>x.ex));
+  save(); closeSheet(); renderSession();
+}
+
+function addExToSession(){
+  const all=[...EX,...custom];
+  openSheet(`${sheetHead("Añadir ejercicio a la sesión")}
+  <div class="sheet-body">
+    ${all.map(e=>`<button class="list-item" onclick="pushEx('${e.id}')">
+      <div class="main"><div class="t1">${esc(e.n)}</div><div class="t2">${esc(e.m)}</div></div>
+      <div class="r">${e.s}×${e.rm}-${e.rM}</div></button>`).join("")}
+    <div style="height:10px"></div>
+  </div>`);
+}
+function pushEx(id){
+  current.entries.push({ex:id,sets:[]});
+  save(); closeSheet(); renderSession();
+  _pending={ei:current.entries.length-1};
+  scopeSheet("Añadir ejercicio","applyAdd");
+}
+function applyAdd(always){
+  if(always) setRoutineList(current.routine,current.entries.map(x=>x.ex));
+  _pending=null; save(); closeSheet(); renderSession();
+  toast(always?"Añadido a la rutina":"Añadido solo por hoy");
+}
+
+function finishSession(){
+  const total=current.entries.reduce((a,e)=>a+e.sets.length,0);
+  if(!total){ toast("No has registrado ninguna serie"); return; }
+  current.entries=current.entries.filter(e=>e.sets.length);
+  current.ended=Date.now();
+  sessions.push(current); current=null; save();
+  toast("Sesión guardada"); renderTrain();
+}
+function cancelSession(){
+  if(!confirm("¿Descartar la sesión sin guardarla?")) return;
+  current=null; save(); renderTrain();
+}
+
+/* Volver atrás: si no hay nada registrado sale directo; si hay, pregunta */
+function stopTimer(){}
+
+function exitSession(){
+  const total=(current.entries||[]).reduce((a,e)=>a+e.sets.length,0);
+  if(!total){ current=null; save(); renderTrain(); return; }
+  openSheet(`${sheetHead("Salir de la sesión")}
+  <div class="sheet-body">
+    <div class="banner">Tienes <b>${total} serie${total>1?"s":""}</b> registrada${total>1?"s":""} en esta sesión.</div>
+    <button class="btn full primary" onclick="closeSheet();finishSession()">Guardarla y salir</button>
+    <div style="height:9px"></div>
+    <button class="btn full" onclick="closeSheet()">Seguir entrenando</button>
+    <div style="height:9px"></div>
+    <button class="btn full ghost" onclick="closeSheet();cancelSession()">Descartar sin guardar</button>
+    <div style="height:10px"></div>
+  </div>`);
+}
+
+/* ==========================================================
+   PÁDEL
+   ========================================================== */
+const PADEL_MET={suave:5.0,medio:6.5,fuerte:8.5};
+const PESO=74; // kg — cámbialo en ajustes si tu peso cambia
+function padelKcal(min,int){ return Math.round(PADEL_MET[int]*getPeso()*(min/60)); }
+function getPeso(){ try{ return +(localStorage.getItem("ironlog_peso")||PESO)||PESO; }catch(e){ return PESO; } }
+
+function renderPadel(){
+  const v=$("v-train");
+  const m=current.minutes||90, it=current.intensity||"medio";
+  v.innerHTML=`
+    <div class="banner" style="display:flex;align-items:center;gap:11px">
+      <button class="icon-btn" onclick="current=null;save();renderTrain()" aria-label="Volver">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:700;color:var(--text)">Pádel</div>
+        <button onclick="pickDate()" style="font-size:12px;color:var(--text-3);margin-top:2px;text-align:left;display:block">${fmtDate(current.date)} ✎</button>
+      </div>
+    </div>
+    <div class="ex"><div style="padding:16px 14px">
+      <div class="field">
+        <label>Duración (minutos)</label>
+        <div class="stepper">
+          <button onclick="padelSet('minutes',-15)">−</button>
+          <input id="pdM" type="number" inputmode="numeric" value="${m}" onchange="current.minutes=+this.value;renderPadel()">
+          <button onclick="padelSet('minutes',15)">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ritmo del partido</label>
+        <div class="pills">
+          ${Object.keys(PADEL_MET).map(k=>`<button class="${k===it?"on":""}" onclick="current.intensity='${k}';save();renderPadel()">${k[0].toUpperCase()+k.slice(1)}</button>`).join("")}
+        </div>
+        <div class="hint">
+          <b>Suave:</b> peloteo social, puntos cortos ·
+          <b>Medio:</b> partido normal ·
+          <b>Fuerte:</b> competitivo, puntos largos y muchos sprints
+        </div>
+      </div>
+      <div class="stat-row" style="margin:16px 0 4px">
+        <div class="stat"><div class="v">${m}</div><div class="l">Minutos</div></div>
+        <div class="stat accent"><div class="v">${padelKcal(m,it)}</div><div class="l">kcal aprox.</div></div>
+        <div class="stat"><div class="v">${PADEL_MET[it]}</div><div class="l">MET</div></div>
+      </div>
+    </div></div>
+    <div class="banner">
+      Estimación con la fórmula MET para tu peso (${getPeso()} kg). El pádel se sitúa entre 5 y 10 MET según
+      el ritmo, así que <b>tómalo como una orientación</b>, no como una medida exacta. Sirve sobre todo para
+      ajustar la comida del sábado.
+    </div>
+    <button class="btn full primary" onclick="savePadel()">Guardar sesión de pádel</button>
+    <div style="height:20px"></div>`;
+}
+function padelSet(k,d){
+  let v=(current[k]||90)+d; if(v<15)v=15; if(v>240)v=240;
+  current[k]=v; save(); renderPadel();
+}
+function savePadel(){
+  const m=current.minutes||90, it=current.intensity||"medio";
+  sessions.push({id:current.id,date:current.date,name:"Pádel",type:"padel",
+    minutes:m,intensity:it,kcal:padelKcal(m,it),entries:[]});
+  current=null; save(); toast("Pádel registrado"); renderTrain();
+}
+
+
+/* ==========================================================
+   FICHA DE TÉCNICA
+   ========================================================== */
+function showTech(id){
+  const e=byId(id); if(!e) return;
+  openSheet(`${sheetHead(esc(e.n))}
+  <div class="sheet-body">
+    <div class="target" style="padding:0 0 16px">
+      <span class="chip"><b>${e.s}</b> series</span>
+      <span class="chip"><b>${e.rm}-${e.rM}</b> reps</span>
+      <span class="chip">RIR <b>${esc(e.rir)}</b></span>
+      <span class="chip">Descanso <b>${e.d>=60?Math.round(e.d/60*10)/10+" min":e.d+" s"}</b></span>
+      ${e.w?`<span class="chip accent">${esc(e.w)}</span>`:""}
+    </div>
+    ${(e.tech||[]).map(([h,items])=>`
+      <div class="tech-block"><div class="h">${esc(h)}</div>
+      <ul>${items.map(t=>`<li>${t}</li>`).join("")}</ul></div>`).join("")}
+    ${e.note?`<div class="tech-note">${e.note}</div>`:""}
+    <div style="height:6px"></div>
+  </div>`);
+}
+
+/* ==========================================================
+   PANTALLA: HISTORIAL
+   ========================================================== */
+function renderHist(){
+  const v=$("v-hist");
+  if(!sessions.length){
+    v.innerHTML=`<div class="empty"><div class="big">📓</div><p>Aquí aparecerán tus sesiones<br>en cuanto registres la primera.</p></div>`;
+    return;
+  }
+  const byWeek={};
+  [...sessions].sort((a,b)=>(a.date<b.date?1:a.date>b.date?-1:b.id-a.id)).forEach(s=>{
+    const d=new Date(s.date+"T12:00:00");
+    const k=d.getFullYear()+"-S"+Math.ceil((((d-new Date(d.getFullYear(),0,1))/864e5)+1)/7);
+    (byWeek[k]=byWeek[k]||[]).push(s);
+  });
+  v.innerHTML=Object.entries(byWeek).map(([k,list])=>`
+    <div class="section-label">${list.length} sesion${list.length>1?"es":""} · semana ${k.split("S")[1]}</div>
+    ${list.map(s=>{
+      if(s.type==="padel"){
+        return `<button class="list-item" onclick="showSession(${s.id})">
+          <div class="main"><div class="t1">Padel</div>
+          <div class="t2">${fmtDate(s.date)} &middot; ${s.minutes} min &middot; ritmo ${esc(s.intensity)}</div></div>
+          <div class="r"><b>${s.kcal}</b>kcal</div></button>`;
+      }
+      const sets=s.entries.reduce((a,e)=>a+e.sets.length,0);
+      const vol=s.entries.reduce((a,e)=>a+e.sets.reduce((b,x)=>b+x.w*x.r,0),0);
+      return `<button class="list-item" onclick="showSession(${s.id})">
+        <div class="main"><div class="t1">${esc(s.name)}</div>
+        <div class="t2">${fmtDate(s.date)} &middot; ${s.entries.length} ejercicios &middot; ${sets} series</div></div>
+        <div class="r"><b>${Math.round(vol).toLocaleString("es-ES")}</b>kg vol.</div></button>`;
+    }).join("")}`).join("")+`<div style="height:12px"></div>`;
+}
+
+function showSession(id){
+  const s=sessions.find(x=>x.id===id); if(!s) return;
+  if(s.type==="padel"){
+    openSheet(`${sheetHead("Padel &middot; "+fmtDate(s.date))}
+    <div class="sheet-body">
+      <div class="stat-row">
+        <div class="stat"><div class="v">${s.minutes}</div><div class="l">Minutos</div></div>
+        <div class="stat accent"><div class="v">${s.kcal}</div><div class="l">kcal aprox.</div></div>
+        <div class="stat"><div class="v">${esc(s.intensity)}</div><div class="l">Ritmo</div></div>
+      </div>
+      <button class="btn full" onclick="pickDate(${s.id})">Cambiar la fecha</button>
+      <div style="height:9px"></div>
+      <button class="btn full ghost" onclick="delSession(${s.id})">Eliminar sesion</button>
+      <div style="height:10px"></div>
+    </div>`);
+    return;
+  }
+  openSheet(`${sheetHead(esc(s.name)+" &middot; "+fmtDate(s.date))}
+  <div class="sheet-body">
+    ${s.entries.map(en=>{
+      const e=byId(en.ex);
+      return `<div class="tech-block"><div class="h">${esc(e?e.n:en.ex)}</div>
+        ${en.sets.map((x,i)=>`<div class="set"><div class="n">${i+1}</div>
+        <div class="v">${fmtW(x.w)} kg <em>×</em> ${x.r} <em>reps</em></div>
+        ${x.rir?`<span class="rir">RIR ${esc(x.rir)}</span>`:""}</div>`).join("")}
+      </div>`;
+    }).join("")}
+    <button class="btn full" onclick="pickDate(${s.id})">Cambiar la fecha</button>
+    <div style="height:9px"></div>
+    <button class="btn full ghost" onclick="delSession(${s.id})">Eliminar sesión</button>
+    <div style="height:10px"></div>
+  </div>`);
+}
+function delSession(id){
+  if(!confirm("¿Eliminar esta sesión?")) return;
+  sessions=sessions.filter(s=>s.id!==id); save(); closeSheet(); renderHist(); toast("Eliminada");
+}
+
+/* ==========================================================
+   PANTALLA: PROGRESO
+   ========================================================== */
+let progEx=null;
+function renderProg(){
+  const v=$("v-prog");
+  const used=[...new Set(sessions.filter(s=>s.type!=="padel").flatMap(s=>s.entries.map(e=>e.ex)))];
+  if(!used.length){
+    v.innerHTML=`<div class="empty"><div class="big">📈</div><p>La gráfica aparecerá cuando tengas<br>al menos dos sesiones de un ejercicio.</p></div>`;
+    return;
+  }
+  if(!progEx||!used.includes(progEx)) progEx=used[0];
+  const e=byId(progEx);
+  const pts=[];
+  sessions.forEach(s=>{
+    const en=s.entries.find(x=>x.ex===progEx);
+    if(en&&en.sets.length){
+      const best=Math.max(...en.sets.map(x=>x.w*(1+x.r/30)));
+      const topW=Math.max(...en.sets.map(x=>x.w));
+      const vol=en.sets.reduce((a,x)=>a+x.w*x.r,0);
+      pts.push({d:s.date,e1rm:best,w:topW,vol});
+    }
+  });
+  const first=pts[0], last=pts[pts.length-1];
+  const delta=pts.length>1?((last.e1rm-first.e1rm)/first.e1rm*100):0;
+  v.innerHTML=`
+    <div class="field">
+      <label>Ejercicio</label>
+      <select onchange="progEx=this.value;renderProg()">
+        ${used.map(id=>{const x=byId(id);return `<option value="${id}" ${id===progEx?"selected":""}>${esc(x?x.n:id)}</option>`;}).join("")}
+      </select>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="v">${fmtW(last.w)}</div><div class="l">Peso top</div></div>
+      <div class="stat accent"><div class="v">${Math.round(last.e1rm)}</div><div class="l">1RM est.</div></div>
+      <div class="stat"><div class="v">${delta>=0?"+":""}${delta.toFixed(1)}%</div><div class="l">Progreso</div></div>
+    </div>
+    <div class="chart-card">${chart(pts)}</div>
+    <div class="section-label">Sesiones de ${esc(e?e.n:"")}</div>
+    ${[...pts].reverse().map(p=>`<div class="list-item">
+      <div class="main"><div class="t1">${fmtDate(p.d)}</div>
+      <div class="t2">Volumen ${Math.round(p.vol).toLocaleString("es-ES")} kg</div></div>
+      <div class="r"><b>${fmtW(p.w)}</b>kg top</div></div>`).join("")}
+    <div style="height:12px"></div>`;
+}
+
+function chart(pts){
+  if(pts.length<2) return `<div class="muted" style="text-align:center;padding:52px 0">Necesitas al menos dos sesiones para ver la tendencia.</div>`;
+  const W=320,H=170,P=28;
+  const vals=pts.map(p=>p.e1rm);
+  const mn=Math.min(...vals)*0.94, mx=Math.max(...vals)*1.04;
+  const x=i=>P+i*(W-P*1.4)/(pts.length-1);
+  const y=v=>H-P-((v-mn)/(mx-mn))*(H-P*1.8);
+  const line=pts.map((p,i)=>`${i?"L":"M"}${x(i).toFixed(1)},${y(p.e1rm).toFixed(1)}`).join(" ");
+  const area=`${line} L${x(pts.length-1).toFixed(1)},${H-P} L${x(0).toFixed(1)},${H-P} Z`;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F2913D" stop-opacity=".28"/>
+      <stop offset="100%" stop-color="#F2913D" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${[0,.5,1].map(f=>`<line x1="${P}" x2="${W-P*0.4}" y1="${H-P-f*(H-P*1.8)}" y2="${H-P-f*(H-P*1.8)}"
+      stroke="#2A3A45" stroke-width="1"/>`).join("")}
+    <path d="${area}" fill="url(#g)"/>
+    <path d="${line}" fill="none" stroke="#F2913D" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p.e1rm).toFixed(1)}" r="3.2" fill="#0E1418" stroke="#F2913D" stroke-width="2"/>`).join("")}
+    <text x="${P-6}" y="${y(mx*0.97).toFixed(1)}" fill="#6B7E8B" font-size="9" text-anchor="end">${Math.round(mx)}</text>
+    <text x="${P-6}" y="${H-P}" fill="#6B7E8B" font-size="9" text-anchor="end">${Math.round(mn)}</text>
+  </svg>`;
+}
+
+/* ==========================================================
+   PANTALLA: EJERCICIOS
+   ========================================================== */
+function renderExs(){
+  const v=$("v-exs");
+  const all=[...EX,...custom];
+  const groups={};
+  all.forEach(e=>{(groups[e.m]=groups[e.m]||[]).push(e);});
+  v.innerHTML=`
+    <button class="btn full primary" onclick="newEx()">+ Crear ejercicio</button>
+    <div style="height:14px"></div>
+    ${Object.entries(groups).map(([m,list])=>`
+      <div class="section-label">${esc(m)}</div>
+      ${list.map(e=>`<button class="list-item" onclick="showTech('${e.id}')">
+        <div class="main"><div class="t1">${esc(e.n)}${custom.find(c=>c.id===e.id)?' <span style="color:var(--text-3);font-weight:500">· propio</span>':""}</div>
+        <div class="t2">${e.s} series · ${e.rm}-${e.rM} reps · RIR ${esc(e.rir)}</div></div>
+        <div class="r">ⓘ</div></button>`).join("")}`).join("")}
+    <div style="height:12px"></div>`;
+}
+
+function newEx(){
+  openSheet(`${sheetHead("Crear ejercicio")}
+  <div class="sheet-body">
+    <div class="field"><label>Nombre</label><input id="nxN" placeholder="Ej. Face pull en polea"></div>
+    <div class="field"><label>Grupo muscular</label><input id="nxM" placeholder="Ej. Hombro posterior"></div>
+    <div class="row3">
+      <div class="field"><label>Series</label><input id="nxS" type="number" inputmode="numeric" value="3"></div>
+      <div class="field"><label>Reps mín.</label><input id="nxRm" type="number" inputmode="numeric" value="8"></div>
+      <div class="field"><label>Reps máx.</label><input id="nxRM" type="number" inputmode="numeric" value="12"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>RIR</label><input id="nxRir" value="0-1"></div>
+      <div class="field"><label>Descanso (s)</label><input id="nxD" type="number" inputmode="numeric" value="90"></div>
+    </div>
+    <div class="field"><label>Peso de partida</label><input id="nxW" placeholder="Ej. 20 kg"></div>
+    <div class="field">
+      <label>Técnica</label>
+      <textarea id="nxT" placeholder="Una indicación por línea:&#10;Abajo: pausa de 1 segundo&#10;Arriba: aprieta medio segundo&#10;Evitar: usar impulso"></textarea>
+      <div class="hint">Cada línea aparecerá como un punto en la ficha de información.</div>
+    </div>
+    <button class="btn full primary" onclick="saveNewEx()">Guardar ejercicio</button>
+    <div style="height:10px"></div>
+  </div>`);
+}
+function saveNewEx(){
+  const n=$("nxN").value.trim(); if(!n){toast("Ponle nombre");return;}
+  const lines=$("nxT").value.split("\n").map(s=>s.trim()).filter(Boolean);
+  custom.push({
+    id:"c_"+Date.now(), n, m:$("nxM").value.trim()||"Otros",
+    s:+$("nxS").value||3, rm:+$("nxRm").value||8, rM:+$("nxRM").value||12,
+    rir:$("nxRir").value.trim()||"0-1", d:+$("nxD").value||90, w:$("nxW").value.trim(),
+    tech: lines.length?[["Ejecución",lines.map(esc)]]:[]
+  });
+  save(); closeSheet(); renderExs(); toast("Ejercicio creado");
+}
+
+/* ==========================================================
+   AJUSTES Y COPIA DE SEGURIDAD
+   ========================================================== */
+function openSettings(){
+  const sets=sessions.reduce((a,s)=>a+s.entries.reduce((b,e)=>b+e.sets.length,0),0);
+  openSheet(`${sheetHead("Ajustes")}
+  <div class="sheet-body">
+    <div class="stat-row">
+      <div class="stat"><div class="v">${sessions.length}</div><div class="l">Sesiones</div></div>
+      <div class="stat"><div class="v">${sets}</div><div class="l">Series</div></div>
+      <div class="stat"><div class="v">${sessions.filter(s=>s.type==="padel").length}</div><div class="l">Padel</div></div>
+    </div>
+    <div class="banner">
+      Los datos se guardan <b>en este navegador</b>, en tu propio móvil. No salen de aquí. Haz copias de seguridad de vez en cuando con el botón de abajo.
+    </div>
+    <div class="section-label">Peso corporal</div>
+    <div class="field">
+      <label>Tu peso en kg (para estimar el gasto del padel)</label>
+      <input id="setPeso" type="number" inputmode="decimal" step="0.5" value="${getPeso()}"
+             onchange="try{localStorage.setItem('ironlog_peso',this.value)}catch(e){};toast('Peso actualizado')">
+    </div>
+    <div class="section-label">Copia de seguridad</div>
+    <button class="btn full" onclick="exportData()">Exportar datos</button>
+    <div style="height:9px"></div>
+    <button class="btn full" onclick="$('impFile').click()">Importar datos</button>
+    <input type="file" id="impFile" accept=".json" style="display:none" onchange="importData(this)">
+    <div class="divider"></div>
+    ${Object.keys(overrides||{}).length?`
+      <div class="section-label">Rutinas modificadas</div>
+      ${Object.keys(overrides).map(rid=>{const r=ROUTINES.find(x=>x.id===rid);return `
+        <button class="list-item" onclick="resetRoutine('${rid}')">
+          <div class="main"><div class="t1">${esc(r?r.n:rid)}</div>
+          <div class="t2">${overrides[rid].length} ejercicios · toca para restaurar la original</div></div>
+          <div class="r">↺</div></button>`;}).join("")}`:""}
+    <div class="section-label">Diagnóstico</div>
+    <div class="banner" style="font-size:11.5px">
+      Guardado: <b>local, en este navegador</b><br>
+      ${LAST_ERR.length?LAST_ERR.map(x=>`<span style="color:var(--red)">${x.t} · ${esc(x.w)}: ${esc(x.m)}</span>`).join("<br>"):"Sin errores registrados."}
+    </div>
+    <p class="muted">Iron Log · Plan de hipertrofia, ciclo de superávit.
+    Para anclarlo en la pantalla de inicio: menú de Chrome → <b>Añadir a pantalla de inicio</b>.</p>
+    <div style="height:10px"></div>
+  </div>`);
+}
+
+function resetRoutine(rid){
+  const r=ROUTINES.find(x=>x.id===rid);
+  if(!confirm("¿Restaurar la rutina original de "+(r?r.n:rid)+"?")) return;
+  delete overrides[rid]; save(); closeSheet(); renderTrain(); toast("Rutina restaurada");
+}
+
+async function exportData(){
+  const json=JSON.stringify({v:PLAN_VERSION,exported:new Date().toISOString(),custom,sessions},null,2);
+  const name="ironlog-"+todayKey()+".json";
+  try{
+    const b=new Blob([json],{type:"application/json"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(b); a.download=name; a.click();
+    toast("Exportado");
+  }catch(e){ toast("No se pudo exportar"); }
+}
+
+function importData(input){
+  const f=input.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const d=JSON.parse(rd.result);
+      if(!confirm("Se reemplazarán los datos actuales. ¿Continuar?")) return;
+      const c=clone(d); custom=c.custom||[]; sessions=c.sessions||[]; overrides=c.overrides||{}; save();
+      closeSheet(); renderTrain(); toast("Datos importados");
+    }catch(e){ toast("Archivo no válido"); }
+  };
+  rd.readAsText(f);
+}
+
+/* Cada función de interfaz protegida: si una falla, se avisa y el resto sigue vivo */
+["renderTrain","renderSession","renderPadel","renderHist","renderProg","renderExs",
+ "startSession","addSet","saveSet","delSet","addExToSession","pushEx","finishSession",
+ "cancelSession","exitSession","showTech","showSession","delSession","newEx","saveNewEx",
+ "openSettings","exportData","importData","savePadel","padelSet","stp","pickRir","chart",
+ "exCard","openSheet","closeSheet","save","load","exMenu","pickSwap","doSwap","removeEx","moveEx","applySwap","applyRemove","applyAdd","scopeSheet","resetRoutine","routineList","pickDate","setDate"].forEach(n=>{
+  const f=window[n];
+  if(typeof f!=="function") return;
+  window[n]=function(){ try{ return f.apply(this,arguments); }catch(e){ report(e,n); } };
+});
+
+boot();
+</script>
+</body>
+</html>

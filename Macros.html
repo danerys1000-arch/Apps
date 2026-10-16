@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contador de Macros Pro</title>
+<style>
+:root{
+  --bg:#0E1418; --surface:#161F26; --surface-2:#1E2A33; --surface-3:#26343E;
+  --line:#2A3A45; --line-soft:#1F2C35;
+  --text:#E9F0F4; --text-2:#9FB0BC; --text-3:#6B7E8B;
+  --accent:#F2913D; --accent-soft:rgba(242,145,61,.13);
+  --cal:#F2913D; --prot:#E4635A; --carb:#5AA9E6; --fat:#4ECB86; --water:#38BDD8;
+  --radius:14px; --radius-sm:10px;
+  --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:15px;line-height:1.45;
+  padding:calc(14px + var(--safe-t)) 14px calc(84px + var(--safe-b));
+  max-width:680px;margin:0 auto;overscroll-behavior-y:none;
+}
+button,input,select,textarea{font-family:inherit;color:inherit;}
+button{cursor:pointer;border:none;background:none;padding:0;}
+
+/* ---------- TÍTULOS ---------- */
+h2{
+  font-size:21px;font-weight:700;letter-spacing:-.4px;margin:4px 0 16px;
+}
+h3{
+  font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--text-3);margin:0 0 12px;
+}
+
+/* ---------- PESTAÑAS ---------- */
+.tab{display:none;}
+.tab.active{display:block;animation:fade .18s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ---------- TARJETAS ---------- */
+.card{
+  background:var(--surface);border:1px solid var(--line-soft);
+  border-radius:var(--radius);padding:16px;margin-bottom:12px;
+}
+
+/* ---------- CAMPOS ---------- */
+input,select{
+  width:100%;padding:12px 13px;margin-bottom:10px;
+  border-radius:var(--radius-sm);background:var(--surface-2);
+  border:1px solid var(--line-soft);font-size:16px;font-weight:600;outline:none;
+}
+input:focus,select:focus{border-color:var(--accent);}
+input::placeholder{color:var(--text-3);font-weight:500;}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--text-3) 50%),linear-gradient(135deg,var(--text-3) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 20px,calc(100% - 13px) 20px;background-size:5px 5px,5px 5px;background-repeat:no-repeat;}
+input[type=range]{padding:0;background:transparent;border:none;}
+
+/* ---------- BOTONES ---------- */
+.btn-primary{
+  display:block;width:100%;padding:13px;margin-bottom:9px;
+  border-radius:var(--radius-sm);background:var(--accent);color:#1A1005;
+  font-size:14px;font-weight:700;text-align:center;letter-spacing:.1px;
+}
+.btn-primary:active{background:#D97F2E;}
+.btn-primary.btn-danger{background:transparent;border:1px solid var(--line);color:var(--text-2);}
+.btn-secondary{
+  display:block;width:100%;padding:13px;margin-bottom:9px;
+  border-radius:var(--radius-sm);background:var(--surface-2);color:var(--text);
+  font-size:14px;font-weight:700;text-align:center;border:1px solid var(--line-soft);
+}
+.btn-secondary:active{background:var(--surface-3);}
+.btn-row{display:flex;gap:9px;}
+.btn-row>*{flex:1 1 0;min-width:0;}
+.btn-row .btn-primary,.btn-row .btn-secondary{margin-bottom:0;}
+
+/* ---------- ACTIVIDAD ---------- */
+.activity-buttons{display:flex;gap:9px;margin-bottom:12px;}
+.activity-btn{flex:1 1 0;min-width:0;}
+.activity-btn{
+  padding:16px 10px;border-radius:var(--radius-sm);text-align:center;
+  background:var(--surface-2);border:1px solid var(--line-soft);
+  font-size:14px;font-weight:700;cursor:pointer;color:var(--text-2);
+}
+.activity-btn span{display:block;font-size:20px;margin-bottom:5px;filter:grayscale(1) opacity(.7);}
+.activity-btn.selected{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+.activity-btn.selected span{filter:none;}
+.hours-slider{margin-bottom:12px;}
+.slider-container{padding:4px 0;}
+.hours-display{text-align:center;font-size:15px;font-weight:700;margin-top:6px;}
+.hours-display span{color:var(--accent);font-size:20px;}
+input[type=range]{-webkit-appearance:none;height:4px;background:var(--surface-3);border-radius:2px;margin:10px 0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);border:3px solid var(--bg);}
+
+/* ---------- BARRAS DE PROGRESO ---------- */
+.progress-item{margin-bottom:14px;}
+.progress-item:last-child{margin-bottom:0;}
+.progress-header{
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-size:13px;margin-bottom:6px;color:var(--text-2);font-weight:600;
+}
+.progress-header span:last-child{font-size:12.5px;color:var(--text-3);font-variant-numeric:tabular-nums;}
+.progress-bar-container{
+  height:8px;background:var(--surface-2);border-radius:5px;overflow:hidden;
+}
+.progress-bar-fill{
+  height:100%;border-radius:5px;font-size:0;transition:width .3s ease;
+  min-width:2px;
+}
+.cal-fill{background:var(--cal);}
+.prot-fill{background:var(--prot);}
+.carb-fill{background:var(--carb);}
+.fat-fill{background:var(--fat);}
+.water-fill{background:var(--water);}
+
+/* ---------- AGUA ---------- */
+.water-controls{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.water-btn{
+  width:46px;height:46px;border-radius:var(--radius-sm);flex:none;
+  background:var(--surface-2);border:1px solid var(--line-soft);
+  font-size:22px;font-weight:600;color:var(--text-2);
+}
+.water-btn:active{background:var(--surface-3);}
+.water-display{flex:1;text-align:center;font-size:20px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+.water-display span{color:var(--water);}
+
+/* ---------- LISTA DE ALIMENTOS ---------- */
+.food-list{margin-top:4px;}
+.food-item{
+  background:var(--surface-2);border:1px solid var(--line-soft);
+  border-radius:var(--radius-sm);padding:12px 13px;margin-bottom:8px;
+}
+.food-item-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.food-name{flex:1;font-size:14.5px;font-weight:700;letter-spacing:-.1px;line-height:1.3;}
+.food-actions{display:flex;gap:6px;flex:none;}
+.action-btn{
+  width:32px;height:32px;border-radius:8px;flex:none;
+  background:var(--surface-3);font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+}
+.action-btn:active{background:var(--line);}
+.action-btn.add{background:var(--accent);}
+.food-macros{display:flex;gap:5px;flex-wrap:wrap;}
+.macro-badge{
+  font-size:11px;font-weight:600;padding:3px 7px;border-radius:5px;
+  background:var(--surface-3);color:var(--text-2);white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ---------- MODALES ---------- */
+.modal{
+  display:none;position:fixed;inset:0;z-index:100;
+  background:rgba(0,0,0,.65);align-items:flex-end;justify-content:center;
+}
+.modal[style*="block"]{display:flex!important;}
+.modal-content{
+  background:var(--surface);width:100%;max-width:680px;
+  border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;
+  padding:18px 18px calc(20px + var(--safe-b));
+  animation:up .22s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.modal-header{
+  display:flex;align-items:center;gap:12px;margin-bottom:16px;
+}
+.modal-header h3{
+  margin:0;flex:1;font-size:17px;font-weight:700;
+  text-transform:none;letter-spacing:-.2px;color:var(--text);
+}
+.close-btn{
+  width:32px;height:32px;border-radius:50%;flex:none;
+  background:var(--surface-2);color:var(--text-2);font-size:18px;
+}
+
+/* ---------- AUDITORÍA ---------- */
+.audit-item{
+  background:var(--surface-2);border:1px solid var(--line-soft);
+  border-radius:var(--radius-sm);padding:12px 13px;margin-bottom:9px;
+}
+.audit-nombre{font-size:14.5px;font-weight:700;margin-bottom:4px;}
+.audit-detalle{font-size:12.5px;color:var(--text-2);line-height:1.5;margin-bottom:10px;}
+.audit-acciones{display:flex;gap:8px;}
+.audit-acciones>*{flex:1 1 0;min-width:0;}
+.audit-fix-btn,.audit-keep-btn{
+  padding:10px;border-radius:8px;font-size:13px;font-weight:700;
+}
+.audit-fix-btn{background:var(--accent);color:#1A1005;}
+.audit-keep-btn{background:var(--surface-3);color:var(--text-2);}
+
+/* ---------- CALENDARIO ---------- */
+.calendar-container{padding:0;}
+.calendar-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.calendar-nav-btn{
+  width:36px;height:36px;border-radius:9px;flex:none;
+  background:var(--surface-2);color:var(--text-2);font-size:12px;
+}
+.calendar-title{flex:1;text-align:center;font-size:15px;font-weight:700;letter-spacing:-.2px;}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.calendar-day{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;
+  background:var(--surface-2);color:var(--text-3);position:relative;
+}
+.calendar-day.has-data{color:var(--text);background:var(--surface-3);}
+.calendar-day.has-data:after{
+  content:"";position:absolute;bottom:5px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;background:var(--accent);
+}
+.calendar-day.today{border:1.5px solid var(--accent);color:var(--accent);}
+.calendar-day.selected{background:var(--accent);color:#1A1005;}
+.calendar-day.selected:after{background:#1A1005;}
+
+/* ---------- RESUMEN DEL DÍA ---------- */
+.summary-header{font-size:15px;font-weight:700;margin-bottom:12px;letter-spacing:-.2px;}
+.summary-item{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:9px 0;border-bottom:1px solid var(--line-soft);
+}
+.summary-item:last-child{border-bottom:none;}
+.summary-label{font-size:13px;color:var(--text-2);}
+.summary-value{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
+
+/* ---------- BARRA INFERIOR ---------- */
+.bottom-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  background:rgba(14,20,24,.95);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-top:1px solid var(--line-soft);
+  display:flex;padding-bottom:var(--safe-b);
+}
+.bottom-bar button{
+  flex:1;padding:10px 4px 9px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--text-3);font-size:10px;font-weight:600;
+}
+.bottom-bar button span{font-size:19px;filter:grayscale(1) opacity(.55);}
+.bottom-bar button.active{color:var(--accent);}
+.bottom-bar button.active span{filter:none;}
+
+/* ---------- ELEMENTOS NUEVOS ---------- */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.chip{
+  font-size:12.5px;font-weight:600;padding:7px 11px;border-radius:20px;
+  background:var(--surface-2);border:1px solid var(--line-soft);color:var(--text-2);
+  white-space:nowrap;
+}
+.chip:active{border-color:var(--accent);}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#1A1005;}
+.stat-row{display:flex;gap:9px;margin-bottom:12px;}
+.stat{flex:1 1 0;min-width:0;}
+.stat{
+  background:var(--surface-2);border:1px solid var(--line-soft);
+  border-radius:var(--radius-sm);padding:12px 8px;text-align:center;
+}
+.stat .v{font-size:19px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+.stat .l{font-size:9.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-top:3px;}
+.stat.accent .v{color:var(--accent);}
+.chart-box svg{width:100%;height:150px;display:block;}
+.hint{font-size:12px;color:var(--text-3);margin:-4px 0 10px;line-height:1.5;}
+.empty-msg{text-align:center;color:var(--text-3);padding:26px 16px;font-size:13.5px;line-height:1.6;}
+.inline-row{display:flex;gap:9px;align-items:flex-start;}
+.inline-row input{margin-bottom:0;}
+.inline-row .btn-primary{margin-bottom:0;width:auto;padding:12px 16px;flex:none;}
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%) translateY(20px);
+  bottom:calc(92px + var(--safe-b));z-index:200;
+  background:var(--surface-3);border:1px solid var(--line);
+  padding:11px 18px;border-radius:30px;font-size:13.5px;font-weight:600;
+  opacity:0;transition:.2s;pointer-events:none;max-width:88vw;text-align:center;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+</style>
+</head>
+<body>
+
+<!-- PESTAÑA PERFIL -->
+<div id="tabPerfil" class="tab active">
+    <h2>Mi perfil</h2>
+    <div class="card">
+        <select id="selectPerfil"></select>
+        <input type="text" id="nombrePerfil" placeholder="Nombre">
+        <input type="number" id="alturaPerfil" placeholder="Altura (cm)">
+        <input type="number" id="pesoPerfil" placeholder="Peso (kg)">
+        <input type="number" id="edadPerfil" placeholder="Edad">
+        <select id="sexoPerfil">
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+        </select>
+        <select id="objetivoPerfil">
+            <option value="masa">Ganar masa muscular</option>
+            <option value="perdida">Pérdida de grasa</option>
+            <option value="mantenimiento">Mantenimiento</option>
+        </select>
+        <button class="btn-primary" id="guardarPerfilBtn">Guardar perfil</button>
+        <button class="btn-primary btn-danger" id="borrarPerfilBtn">Borrar perfil</button>
+    </div>
+</div>
+
+<!-- PESTAÑA MACROS -->
+<div id="tabMacros" class="tab">
+    <h2>Mis macros</h2>
+    
+    <div class="card">
+        <h3>Tipo de actividad</h3>
+        <div class="activity-buttons">
+            <div class="activity-btn" id="btnDescanso">
+                <span>○</span>
+                Descanso
+            </div>
+            <div class="activity-btn" id="btnEjercicio">
+                <span>●</span>
+                Ejercicio
+            </div>
+        </div>
+        
+        <div class="hours-slider" id="hoursSection" style="display:none;">
+            <h3>Horas de ejercicio</h3>
+            <div class="slider-container">
+                <input type="range" id="horasSlider" min="0.5" max="4" step="0.5" value="1">
+                <div class="hours-display"><span id="horasDisplay">1</span> horas</div>
+            </div>
+        </div>
+        
+        <button class="btn-primary" id="calcularMacrosBtn">Calcular macros</button>
+    </div>
+
+    <div class="card">
+        <h3>Macros manuales</h3>
+        <p style="text-align:center;color:#888;font-size:13px;margin-top:-8px;margin-bottom:5px;">
+            Introduce tus propios objetivos (permite decimales)
+        </p>
+        <input type="number" id="calManual" placeholder="Calorías (kcal)" step="0.1">
+        <input type="number" id="protManual" placeholder="Proteínas (g)" step="0.1">
+        <input type="number" id="carbManual" placeholder="Carbohidratos (g)" step="0.1">
+        <input type="number" id="fatManual" placeholder="Grasas (g)" step="0.1">
+        <button class="btn-primary" id="guardarMacrosManualBtn">Guardar objetivos</button>
+    </div>
+
+    <div class="card progress-section">
+        <h3>Progreso de hoy</h3>
+        
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>Calorías</span>
+                <span id="calText">0 / 0 kcal</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill cal-fill" id="calBar" style="width:0%">0%</div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>Proteínas</span>
+                <span id="protText">0 / 0 g</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill prot-fill" id="protBar" style="width:0%">0%</div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>Carbohidratos</span>
+                <span id="carbText">0 / 0 g</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill carb-fill" id="carbBar" style="width:0%">0%</div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>Grasas</span>
+                <span id="fatText">0 / 0 g</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill fat-fill" id="fatBar" style="width:0%">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card water-section">
+        <h3>Hidratación</h3>
+        <div class="water-controls">
+            <button class="water-btn" id="aguaMenos">−</button>
+            <div class="water-display"><span id="aguaActual">0</span> ml</div>
+            <button class="water-btn" id="aguaMas">+</button>
+        </div>
+        <div class="progress-item">
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill water-fill" id="aguaBar" style="width:0%">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Alimentos de hoy</h3>
+        <div id="alimentosHoy"></div>
+        <div class="btn-row" style="margin-top:14px">
+            <button class="btn-primary" id="guardarDiaBtn">Guardar día</button>
+            <button class="btn-secondary" onclick="guardarComoComida()">Guardar como comida</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Comidas guardadas</h3>
+        <p class="hint">Agrupa varios alimentos y añádelos de un toque. Útil si repites desayuno o comida.</p>
+        <div id="listaComidas"></div>
+    </div>
+</div>
+
+<!-- PESTAÑA ALIMENTOS -->
+<div id="tabAlimentos" class="tab">
+    <h2>Mis alimentos</h2>
+    <div class="card">
+        <button class="btn-primary" id="abrirModalBtn">Añadir alimento</button>
+        <button class="btn-primary" id="auditarAlimentosBtn" class="btn-secondary">Auditar calorías</button>
+        <input type="text" id="buscarAlimentoInput" placeholder="Buscar alimento…" autocomplete="off">
+        <div class="chips" id="filtrosAlimentos"></div>
+        <div class="food-list" id="foodList"></div>
+    </div>
+
+    <div class="card">
+        <h3>Copia de seguridad</h3>
+        <p class="hint">Exporta un archivo con alimentos, perfiles, comidas guardadas, pesos e historial para pasarlo a otro dispositivo o no perderlo.</p>
+        <div class="btn-row">
+            <button class="btn-primary" onclick="exportarTodo()">Exportar</button>
+            <button class="btn-secondary" onclick="document.getElementById('archivoImportar').click()">Importar</button>
+        </div>
+        <input type="file" id="archivoImportar" accept=".json" style="display:none" onchange="importarTodo(this)">
+        <div id="avisoBackup" class="hint" style="margin:10px 0 0"></div>
+    </div>
+</div>
+
+<!-- MODAL AUDITORÍA -->
+<div id="modalAuditoria" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Auditoría de calorías</h3>
+            <button class="close-btn" id="cerrarAuditoriaBtn">×</button>
+        </div>
+        <div id="auditoriaResumen" style="text-align:center;color:#666;margin-bottom:10px;"></div>
+        <div id="auditoriaLista"></div>
+    </div>
+</div>
+
+<!-- PESTAÑA HISTORIAL -->
+<div id="tabHistorial" class="tab">
+    <h2>Historial</h2>
+    <div class="card">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button class="calendar-nav-btn" id="prevMes">◀</button>
+                <div class="calendar-title" id="mesAno"></div>
+                <button class="calendar-nav-btn" id="nextMes">▶</button>
+            </div>
+            <div class="calendar-grid" id="calendarDays"></div>
+        </div>
+    </div>
+    <div class="card">
+        <h3>Peso corporal</h3>
+        <div class="inline-row">
+            <input type="number" id="pesoHoy" placeholder="Peso de hoy (kg)" step="0.1" inputmode="decimal">
+            <button class="btn-primary" onclick="guardarPeso()">Guardar</button>
+        </div>
+        <p class="hint" style="margin-top:8px">Pésate en ayunas 3-4 mañanas por semana y compara la media semanal.</p>
+    </div>
+
+    <div class="card">
+        <h3>Tendencias</h3>
+        <div id="tendencias"></div>
+    </div>
+
+    <div class="card day-summary" id="resumenDia">
+        <p style="text-align:center; color:#999;">Selecciona un día para ver el resumen</p>
+    </div>
+</div>
+
+<!-- MODAL ALIMENTOS -->
+<div id="modalAlimento" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Agregar Alimento</h3>
+            <button class="close-btn" id="cerrarModalBtn">×</button>
+        </div>
+        <input type="text" id="nombreAlimento" placeholder="Nombre del alimento">
+        <input type="number" id="calAlimento" placeholder="Calorías (por 100g)" step="0.1">
+        <div id="hintCalorias" style="font-size:13px;color:#888;margin:-6px 0 10px 4px;"></div>
+        <input type="number" id="protAlimento" placeholder="Proteínas (g por 100g)" step="0.1">
+        <input type="number" id="carbAlimento" placeholder="Carbohidratos (g por 100g)" step="0.1">
+        <input type="number" id="fatAlimento" placeholder="Grasas (g por 100g)" step="0.1">
+        <button class="btn-primary" id="guardarAlimentoBtn">Guardar</button>
+    </div>
+</div>
+
+<!-- MODAL CANTIDAD -->
+<div id="modalGramos" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="gramosTitulo">Cantidad</h3>
+            <button class="close-btn" onclick="document.getElementById('modalGramos').style.display='none'">×</button>
+        </div>
+        <input type="hidden" id="gramosIdx">
+        <h3>Cantidad en gramos</h3>
+        <div class="inline-row" style="margin-bottom:12px">
+            <button class="btn-secondary" style="width:52px;margin:0" onclick="ajustarGramos(-10)">−</button>
+            <input type="number" id="gramosInput" value="100" step="1" inputmode="decimal" style="text-align:center;font-size:19px">
+            <button class="btn-secondary" style="width:52px;margin:0" onclick="ajustarGramos(10)">+</button>
+        </div>
+        <div class="chips" style="margin-bottom:14px">
+            <button class="chip" onclick="document.getElementById('gramosInput').value=50;actualizarPreviaGramos()">50 g</button>
+            <button class="chip" onclick="document.getElementById('gramosInput').value=100;actualizarPreviaGramos()">100 g</button>
+            <button class="chip" onclick="document.getElementById('gramosInput').value=150;actualizarPreviaGramos()">150 g</button>
+            <button class="chip" onclick="document.getElementById('gramosInput').value=200;actualizarPreviaGramos()">200 g</button>
+        </div>
+        <h3>Aporta</h3>
+        <div class="food-macros" id="gramosPrevia" style="margin-bottom:16px"></div>
+        <button class="btn-primary" onclick="confirmarGramos()">Añadir al día</button>
+    </div>
+</div>
+
+<!-- BARRA INFERIOR -->
+<div class="bottom-bar">
+    <button onclick="mostrarTab('tabPerfil', event)">
+        <span>◉</span>
+        Perfil
+    </button>
+    <button onclick="mostrarTab('tabMacros', event)">
+        <span>▤</span>
+        Macros
+    </button>
+    <button onclick="mostrarTab('tabAlimentos', event)">
+        <span>◧</span>
+        Alimentos
+    </button>
+    <button onclick="mostrarTab('tabHistorial', event)">
+        <span>▦</span>
+        Historial
+    </button>
+</div>
+
+<script>
+// ==================== VARIABLES GLOBALES ====================
+let perfiles = JSON.parse(localStorage.getItem('perfiles') || '[]');
+let perfilActivo = null;
+let tipoDia = '';
+let horas = 1;
+let macrosDia = { cal: 0, prot: 0, carb: 0, fat: 0 };
+let agua = 0;
+let aguaMeta = 2000;
+let alimentos = JSON.parse(localStorage.getItem('alimentos') || '[]');
+let alimentosHoy = [];
+let calendarioMes = new Date().getMonth();
+let calendarioAno = new Date().getFullYear();
+let selectedDay = new Date().getDate();
+let activeTab = localStorage.getItem('activeTab') || 'tabPerfil';
+
+// ==================== UTILIDADES DE DECIMALES ====================
+// Redondea a 2 decimales evitando errores de coma flotante (ej: 0.1+0.2)
+function redondear(n, decimales = 2) {
+    n = parseFloat(n);
+    if (isNaN(n)) return 0;
+    let factor = Math.pow(10, decimales);
+    return Math.round((n + Number.EPSILON) * factor) / factor;
+}
+
+// Formatea un número para mostrarlo: quita ceros decimales innecesarios
+// pero conserva los decimales reales (ej: 3.70 -> "3.7", 5 -> "5")
+function formatearNumero(n) {
+    n = redondear(n, 2);
+    if (Number.isInteger(n)) return n.toString();
+    return n.toFixed(2).replace(/0$/, '').replace(/\.$/, '');
+}
+
+// ==================== INICIALIZACIÓN ====================
+document.addEventListener('DOMContentLoaded', function() {
+    mostrarTab(activeTab);
+    actualizarSelectPerfil();
+    mostrarAlimentos();
+    mostrarAlimentosHoy();
+    dibujarCalendario();
+    cargarDiaActual();
+    actualizarCamposManual();
+});
+
+// ==================== FUNCIONES DE PESTAÑAS ====================
+function mostrarTab(id, event) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.bottom-bar button').forEach(b => b.classList.remove('active'));
+    if(event) event.currentTarget.classList.add('active');
+    else {
+        // Activar botón correspondiente al cargar
+        const buttons = document.querySelectorAll('.bottom-bar button');
+        buttons.forEach(btn => {
+            if(btn.getAttribute('onclick')?.includes(id)) {
+                btn.classList.add('active');
+            }
+        });
+    }
+    activeTab = id;
+    localStorage.setItem('activeTab', activeTab);
+}
+
+// ==================== GESTIÓN DE PERFILES ====================
+function actualizarSelectPerfil() {
+    let select = document.getElementById('selectPerfil');
+    select.innerHTML = '<option value="">-- Selecciona un perfil --</option>';
+    perfiles.forEach((p, i) => {
+        let opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = p.nombre;
+        select.appendChild(opt);
+    });
+    select.onchange = () => {
+        let idx = parseInt(select.value);
+        if (!isNaN(idx)) cargarPerfil(idx);
+    };
+    if (perfiles.length > 0) {
+        select.value = 0;
+        cargarPerfil(0);
+    } else {
+        perfilActivo = null;
+        limpiarFormularioPerfil();
+    }
+}
+
+function limpiarFormularioPerfil() {
+    document.getElementById('nombrePerfil').value = '';
+    document.getElementById('alturaPerfil').value = '';
+    document.getElementById('pesoPerfil').value = '';
+    document.getElementById('edadPerfil').value = '';
+}
+
+function cargarPerfil(idx) {
+    let p = perfiles[idx];
+    perfilActivo = p;
+    document.getElementById('nombrePerfil').value = p.nombre;
+    document.getElementById('alturaPerfil').value = p.altura;
+    document.getElementById('pesoPerfil').value = p.peso;
+    document.getElementById('edadPerfil').value = p.edad;
+    document.getElementById('sexoPerfil').value = p.sexo;
+    document.getElementById('objetivoPerfil').value = p.objetivo;
+    cargarDiaActual();
+}
+
+document.getElementById('guardarPerfilBtn').addEventListener('click', () => {
+    let nombre = document.getElementById('nombrePerfil').value.trim();
+    if (!nombre) {
+        alert('Por favor ingresa un nombre');
+        return;
+    }
+    let altura = parseInt(document.getElementById('alturaPerfil').value) || 0;
+    let peso = parseInt(document.getElementById('pesoPerfil').value) || 0;
+    let edad = parseInt(document.getElementById('edadPerfil').value) || 0;
+    let sexo = document.getElementById('sexoPerfil').value;
+    let objetivo = document.getElementById('objetivoPerfil').value;
+
+    if (!altura || !peso || !edad) {
+        alert('Por favor completa todos los campos');
+        return;
+    }
+
+    let idx = perfiles.findIndex(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+    let perfil = { nombre, altura, peso, edad, sexo, objetivo };
+    if (idx >= 0) perfiles[idx] = perfil;
+    else perfiles.push(perfil);
+
+    localStorage.setItem('perfiles', JSON.stringify(perfiles));
+    actualizarSelectPerfil();
+    alert('Perfil guardado');
+});
+
+document.getElementById('borrarPerfilBtn').addEventListener('click', () => {
+    let idx = parseInt(document.getElementById('selectPerfil').value);
+    if (isNaN(idx)) {
+        alert('Selecciona un perfil para borrar');
+        return;
+    }
+    if (confirm('¿Estás seguro de borrar este perfil?')) {
+        perfiles.splice(idx, 1);
+        localStorage.setItem('perfiles', JSON.stringify(perfiles));
+        actualizarSelectPerfil();
+        alert('Perfil borrado');
+    }
+});
+
+// ==================== CÁLCULO DE MACROS AVANZADO ====================
+
+// Botones de actividad
+document.getElementById('btnDescanso').addEventListener('click', function() {
+    tipoDia = 'descanso';
+    document.getElementById('btnDescanso').classList.add('selected');
+    document.getElementById('btnEjercicio').classList.remove('selected');
+    document.getElementById('hoursSection').style.display = 'none';
+});
+
+document.getElementById('btnEjercicio').addEventListener('click', function() {
+    tipoDia = 'ejercicio';
+    document.getElementById('btnEjercicio').classList.add('selected');
+    document.getElementById('btnDescanso').classList.remove('selected');
+    document.getElementById('hoursSection').style.display = 'block';
+});
+
+// Slider de horas
+document.getElementById('horasSlider').addEventListener('input', function() {
+    horas = parseFloat(this.value);
+    document.getElementById('horasDisplay').textContent = horas;
+});
+
+// Calcular macros con fórmula de Mifflin-St Jeor mejorada
+document.getElementById('calcularMacrosBtn').addEventListener('click', () => {
+    if (!perfilActivo) {
+        alert('Crea o selecciona un perfil primero');
+        return;
+    }
+    if (!tipoDia) {
+        alert('Selecciona un tipo de actividad');
+        return;
+    }
+
+    // Fórmula Mifflin-St Jeor para TMB (Tasa Metabólica Basal)
+    let tmb;
+    if (perfilActivo.sexo === 'M') {
+        tmb = (10 * perfilActivo.peso) + (6.25 * perfilActivo.altura) - (5 * perfilActivo.edad) + 5;
+    } else {
+        tmb = (10 * perfilActivo.peso) + (6.25 * perfilActivo.altura) - (5 * perfilActivo.edad) - 161;
+    }
+
+    // Factor de actividad mejorado
+    let factorActividad;
+    if (tipoDia === 'descanso') {
+        factorActividad = 1.2; // Sedentario
+    } else {
+        // Ejercicio: ajuste dinámico según horas
+        if (horas <= 1) {
+            factorActividad = 1.375; // Ejercicio ligero
+        } else if (horas <= 2) {
+            factorActividad = 1.55; // Ejercicio moderado
+        } else if (horas <= 3) {
+            factorActividad = 1.725; // Ejercicio intenso
+        } else {
+            factorActividad = 1.9; // Ejercicio muy intenso
+        }
+    }
+
+    // TDEE (Total Daily Energy Expenditure)
+    let tdee = Math.round(tmb * factorActividad);
+
+    // Ajuste según objetivo
+    let calObjetivo;
+    if (perfilActivo.objetivo === 'masa') {
+        calObjetivo = Math.round(tdee * 1.15); // +15% para ganar masa
+    } else if (perfilActivo.objetivo === 'perdida') {
+        calObjetivo = Math.round(tdee * 0.85); // -15% para perder grasa
+    } else {
+        calObjetivo = tdee; // Mantenimiento
+    }
+
+    // Cálculo de macros optimizado
+    let protObjetivo, carbObjetivo, fatObjetivo;
+
+    if (perfilActivo.objetivo === 'masa') {
+        // Ganancia muscular: alta proteína y carbohidratos
+        protObjetivo = Math.round(perfilActivo.peso * 2.2); // 2.2g/kg
+        fatObjetivo = Math.round(perfilActivo.peso * 1); // 1g/kg
+        let calRestantes = calObjetivo - (protObjetivo * 4) - (fatObjetivo * 9);
+        carbObjetivo = Math.round(calRestantes / 4);
+    } else if (perfilActivo.objetivo === 'perdida') {
+        // Pérdida de grasa: muy alta proteína, menor carbohidratos
+        protObjetivo = Math.round(perfilActivo.peso * 2.5); // 2.5g/kg para preservar músculo
+        fatObjetivo = Math.round(perfilActivo.peso * 0.8); // 0.8g/kg
+        let calRestantes = calObjetivo - (protObjetivo * 4) - (fatObjetivo * 9);
+        carbObjetivo = Math.round(calRestantes / 4);
+    } else {
+        // Mantenimiento: balance
+        protObjetivo = Math.round(perfilActivo.peso * 2); // 2g/kg
+        fatObjetivo = Math.round(perfilActivo.peso * 0.9); // 0.9g/kg
+        let calRestantes = calObjetivo - (protObjetivo * 4) - (fatObjetivo * 9);
+        carbObjetivo = Math.round(calRestantes / 4);
+    }
+
+    // Meta de agua basada en peso
+    aguaMeta = perfilActivo.peso * 35; // 35ml por kg de peso
+
+    macrosDia = {
+        cal: calObjetivo,
+        prot: protObjetivo,
+        carb: carbObjetivo,
+        fat: fatObjetivo
+    };
+
+    actualizarBarras();
+    actualizarCamposManual();
+    alert(` Macros calculados!\n\n Calorías: ${calObjetivo} kcal\n Proteínas: ${protObjetivo}g\n Carbos: ${carbObjetivo}g\n Grasas: ${fatObjetivo}g\n Agua: ${aguaMeta}ml`);
+});
+
+// ==================== MACROS MANUALES ====================
+document.getElementById('guardarMacrosManualBtn').addEventListener('click', () => {
+    let cal = parseFloat(document.getElementById('calManual').value);
+    let prot = parseFloat(document.getElementById('protManual').value);
+    let carb = parseFloat(document.getElementById('carbManual').value);
+    let fat = parseFloat(document.getElementById('fatManual').value);
+
+    if ([cal, prot, carb, fat].some(v => isNaN(v) || v < 0)) {
+        alert(' Por favor completa los 4 campos con valores válidos (puedes usar decimales, ej: 3.7)');
+        return;
+    }
+
+    macrosDia = {
+        cal: redondear(cal),
+        prot: redondear(prot),
+        carb: redondear(carb),
+        fat: redondear(fat)
+    };
+
+    actualizarBarras();
+    guardarMacrosHoy();
+    alert(` Macros manuales guardados!\n\n Calorías: ${formatearNumero(macrosDia.cal)} kcal\n Proteínas: ${formatearNumero(macrosDia.prot)}g\n Carbos: ${formatearNumero(macrosDia.carb)}g\n Grasas: ${formatearNumero(macrosDia.fat)}g`);
+});
+
+// Sincroniza los campos de macros manuales con los macros activos del día
+function actualizarCamposManual() {
+    document.getElementById('calManual').value = macrosDia.cal || '';
+    document.getElementById('protManual').value = macrosDia.prot || '';
+    document.getElementById('carbManual').value = macrosDia.carb || '';
+    document.getElementById('fatManual').value = macrosDia.fat || '';
+}
+
+// ==================== ACTUALIZAR BARRAS ====================
+function actualizarBarras() {
+    let calHoy = alimentosHoy.reduce((sum, a) => sum + a.cal, 0);
+    let protHoy = alimentosHoy.reduce((sum, a) => sum + a.prot, 0);
+    let carbHoy = alimentosHoy.reduce((sum, a) => sum + a.carb, 0);
+    let fatHoy = alimentosHoy.reduce((sum, a) => sum + a.fat, 0);
+
+    actualizarBarra('cal', calHoy, macrosDia.cal);
+    actualizarBarra('prot', protHoy, macrosDia.prot);
+    actualizarBarra('carb', carbHoy, macrosDia.carb);
+    actualizarBarra('fat', fatHoy, macrosDia.fat);
+    actualizarBarra('agua', agua, aguaMeta);
+}
+
+function actualizarBarra(tipo, actual, meta) {
+    if (meta === 0) meta = 1;
+    let porcentaje = Math.min((actual / meta) * 100, 100);
+    let barraEl = document.getElementById(tipo + 'Bar');
+    let textoEl = document.getElementById(tipo + 'Text');
+    
+    barraEl.style.width = porcentaje + '%';
+    barraEl.textContent = Math.round(porcentaje) + '%';
+    
+    if (tipo === 'agua') {
+        document.getElementById('aguaActual').textContent = formatearNumero(actual);
+    } else {
+        textoEl.textContent = `${formatearNumero(actual)} / ${formatearNumero(meta)} ${tipo === 'cal' ? 'kcal' : 'g'}`;
+    }
+}
+
+// ==================== GESTIÓN DE AGUA ====================
+document.getElementById('aguaMas').addEventListener('click', () => {
+    agua += 100;
+    actualizarBarras();
+    guardarMacrosHoy();
+});
+
+document.getElementById('aguaMenos').addEventListener('click', () => {
+    agua = Math.max(0, agua - 100);
+    actualizarBarras();
+    guardarMacrosHoy();
+});
+
+// ==================== GESTIÓN DE ALIMENTOS ====================
+document.getElementById('abrirModalBtn').addEventListener('click', () => {
+    limpiarModalAlimento();
+    document.getElementById('modalAlimento').style.display = 'block';
+});
+
+document.getElementById('cerrarModalBtn').addEventListener('click', () => {
+    document.getElementById('modalAlimento').style.display = 'none';
+});
+
+document.getElementById('guardarAlimentoBtn').addEventListener('click', guardarAlimento);
+
+// ==================== AUDITORÍA DE CALORÍAS ====================
+document.getElementById('auditarAlimentosBtn').addEventListener('click', abrirAuditoria);
+document.getElementById('buscarAlimentoInput').addEventListener('input', mostrarAlimentos);
+document.getElementById('cerrarAuditoriaBtn').addEventListener('click', () => {
+    document.getElementById('modalAuditoria').style.display = 'none';
+});
+
+// Margen de tolerancia: 10% o 10 kcal, lo que sea mayor (fibra, redondeos de etiqueta, etc.)
+function calcularDesajuste(a) {
+    let calCalculadas = redondear((a.prot * 4) + (a.carb * 4) + (a.fat * 9));
+    let diferencia = Math.abs(a.cal - calCalculadas);
+    let margen = Math.max(1, calCalculadas * 0.01);
+    return { calCalculadas, diferencia, margen, sobrepasa: diferencia > margen };
+}
+
+function abrirAuditoria() {
+    if (alimentos.length === 0) {
+        alert('No tienes alimentos guardados todavía.');
+        return;
+    }
+
+    let conProblemas = alimentos
+        .map((a, i) => Object.assign({ idx: i }, a, calcularDesajuste(a)))
+        .filter(a => a.sobrepasa);
+
+    let resumen = document.getElementById('auditoriaResumen');
+    let lista = document.getElementById('auditoriaLista');
+    lista.innerHTML = '';
+
+    if (conProblemas.length === 0) {
+        resumen.textContent = ` Revisados ${alimentos.length} alimentos. Todas las calorías cuadran con los macros (margen del 1%).`;
+        document.getElementById('modalAuditoria').style.display = 'block';
+        return;
+    }
+
+    resumen.textContent = ` ${conProblemas.length} de ${alimentos.length} alimentos tienen calorías que no cuadran con sus macros (margen del 1%):`;
+
+    conProblemas.forEach(a => {
+        let item = document.createElement('div');
+        item.className = 'audit-item';
+        item.innerHTML = `
+            <span class="audit-nombre">${a.nombre}</span>
+            <div class="audit-detalle">
+                Guardado: <b>${formatearNumero(a.cal)} kcal</b> · 
+                Según macros (${formatearNumero(a.carb)}g carb × 4 + ${formatearNumero(a.prot)}g prot × 4 + ${formatearNumero(a.fat)}g grasa × 9): 
+                <b>${formatearNumero(a.calCalculadas)} kcal</b>
+                (diferencia de ${formatearNumero(a.diferencia)} kcal)
+            </div>
+            <div class="audit-acciones">
+                <button class="audit-fix-btn" onclick="corregirAlimento(${a.idx})">Usar ${formatearNumero(a.calCalculadas)} kcal</button>
+                <button class="audit-keep-btn" onclick="mantenerAlimento(${a.idx})">Mantener como está</button>
+            </div>
+        `;
+        item.id = `audit-item-${a.idx}`;
+        lista.appendChild(item);
+    });
+
+    document.getElementById('modalAuditoria').style.display = 'block';
+}
+
+function corregirAlimento(idx) {
+    let a = alimentos[idx];
+    let { calCalculadas } = calcularDesajuste(a);
+    alimentos[idx].cal = calCalculadas;
+    localStorage.setItem('alimentos', JSON.stringify(alimentos));
+    mostrarAlimentos();
+    let item = document.getElementById(`audit-item-${idx}`);
+    if (item) item.remove();
+    actualizarResumenAuditoriaTrasCambio();
+}
+
+function mantenerAlimento(idx) {
+    let item = document.getElementById(`audit-item-${idx}`);
+    if (item) item.remove();
+    actualizarResumenAuditoriaTrasCambio();
+}
+
+function actualizarResumenAuditoriaTrasCambio() {
+    let lista = document.getElementById('auditoriaLista');
+    if (lista.children.length === 0) {
+        document.getElementById('auditoriaResumen').textContent = 'Auditoría completada. No quedan alimentos pendientes de revisar.';
+    }
+}
+
+function limpiarModalAlimento() {
+    document.getElementById('nombreAlimento').value = '';
+    document.getElementById('calAlimento').value = '';
+    document.getElementById('protAlimento').value = '';
+    document.getElementById('carbAlimento').value = '';
+    document.getElementById('fatAlimento').value = '';
+    document.getElementById('hintCalorias').textContent = '';
+}
+
+// Calorías reales según macros: carbohidratos 4 kcal/g, proteína 4 kcal/g, grasa 9 kcal/g
+function calcularCaloriasDesdeMacros() {
+    let prot = parseFloat(document.getElementById('protAlimento').value) || 0;
+    let carb = parseFloat(document.getElementById('carbAlimento').value) || 0;
+    let fat = parseFloat(document.getElementById('fatAlimento').value) || 0;
+    return redondear((prot * 4) + (carb * 4) + (fat * 9));
+}
+
+function actualizarHintCalorias() {
+    let calculadas = calcularCaloriasDesdeMacros();
+    document.getElementById('hintCalorias').textContent =
+        `Según carb×4 + prot×4 + grasa×9 = ${formatearNumero(calculadas)} kcal`;
+}
+
+['protAlimento', 'carbAlimento', 'fatAlimento'].forEach(id => {
+    document.getElementById(id).addEventListener('input', actualizarHintCalorias);
+});
+
+function guardarAlimento() {
+    let nombre = document.getElementById('nombreAlimento').value.trim();
+    if (!nombre) {
+        alert('Escribe el nombre del alimento');
+        return;
+    }
+    let cal = redondear(parseFloat(document.getElementById('calAlimento').value) || 0);
+    let prot = redondear(parseFloat(document.getElementById('protAlimento').value) || 0);
+    let carb = redondear(parseFloat(document.getElementById('carbAlimento').value) || 0);
+    let fat = redondear(parseFloat(document.getElementById('fatAlimento').value) || 0);
+
+    // Verifica que las calorías introducidas cuadren con los macros (4/4/9).
+    // Una diferencia grande suele significar un error al copiar el dato (p. ej. de una etiqueta).
+    let calCalculadas = redondear((prot * 4) + (carb * 4) + (fat * 9));
+    let diferencia = Math.abs(cal - calCalculadas);
+    let margenPermitido = Math.max(1, calCalculadas * 0.01); // 1% o 1 kcal, lo que sea mayor
+
+    if (diferencia > margenPermitido) {
+        let usarCalculadas = confirm(
+            ` Las calorías que escribiste (${formatearNumero(cal)} kcal) no cuadran con los macros ` +
+            `(${formatearNumero(carb)}g carb × 4 + ${formatearNumero(prot)}g prot × 4 + ${formatearNumero(fat)}g grasa × 9 = ${formatearNumero(calCalculadas)} kcal).\n\n` +
+            `Pulsa "Aceptar" para usar las calorías calculadas (${formatearNumero(calCalculadas)} kcal), ` +
+            `o "Cancelar" para mantener el valor que escribiste (${formatearNumero(cal)} kcal).`
+        );
+        if (usarCalculadas) cal = calCalculadas;
+    }
+
+    let idx = alimentos.findIndex(a => a.nombre.toLowerCase() === nombre.toLowerCase());
+    if (idx >= 0) alimentos[idx] = { nombre, cal, prot, carb, fat };
+    else alimentos.push({ nombre, cal, prot, carb, fat });
+    
+    alimentos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    localStorage.setItem('alimentos', JSON.stringify(alimentos));
+    document.getElementById('modalAlimento').style.display = 'none';
+    mostrarAlimentos();
+    alert('Alimento guardado');
+}
+
+function mostrarAlimentos() {
+    let div = document.getElementById('foodList');
+    div.innerHTML = '';
+    
+    if (alimentos.length === 0) {
+        div.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">No hay alimentos guardados. ¡Agrega tu primer alimento!</p>';
+        return;
+    }
+    
+    let filtro = (document.getElementById('buscarAlimentoInput').value || '').trim().toLowerCase();
+    let listaFiltrada = alimentos
+        .map((a, i) => ({ a, i }))
+        .filter(({ a }) => a.nombre.toLowerCase().includes(filtro));
+    
+    if (listaFiltrada.length === 0) {
+        div.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">No se encontraron alimentos con ese nombre.</p>';
+        return;
+    }
+    
+    listaFiltrada.forEach(({ a, i }) => {
+        let item = document.createElement('div');
+        item.className = 'food-item';
+        item.innerHTML = `
+            <div class="food-item-header">
+                <span class="food-name">${a.nombre}</span>
+                <div class="food-actions">
+                    <button class="action-btn add" onclick="agregarHoy(${i})" title="Agregar">➕</button>
+                    <button class="action-btn edit" onclick="editarAlimento(${i})" title="Editar">✏</button>
+                    <button class="action-btn delete" onclick="borrarAlimento(${i})" title="Borrar"></button>
+                </div>
+            </div>
+            <div class="food-macros">
+                <span class="macro-badge"> ${formatearNumero(a.cal)} kcal</span>
+                <span class="macro-badge"> ${formatearNumero(a.prot)}g</span>
+                <span class="macro-badge"> ${formatearNumero(a.carb)}g</span>
+                <span class="macro-badge"> ${formatearNumero(a.fat)}g</span>
+            </div>
+        `;
+        div.appendChild(item);
+    });
+}
+
+function borrarAlimento(i) {
+    if (confirm(`¿Borrar "${alimentos[i].nombre}"?`)) {
+        alimentos.splice(i, 1);
+        localStorage.setItem('alimentos', JSON.stringify(alimentos));
+        mostrarAlimentos();
+        alert('Alimento borrado');
+    }
+}
+
+function editarAlimento(i) {
+    let a = alimentos[i];
+    document.getElementById('modalAlimento').style.display = 'block';
+    document.getElementById('nombreAlimento').value = a.nombre;
+    document.getElementById('calAlimento').value = a.cal;
+    document.getElementById('protAlimento').value = a.prot;
+    document.getElementById('carbAlimento').value = a.carb;
+    document.getElementById('fatAlimento').value = a.fat;
+    actualizarHintCalorias();
+}
+
+function agregarHoy(i) {
+    let gramos = parseFloat(prompt(`¿Cuántos gramos de "${alimentos[i].nombre}"?`, 100));
+    if (isNaN(gramos) || gramos <= 0) return;
+    
+    let factor = gramos / 100;
+    let nuevo = {
+        nombre: `${alimentos[i].nombre} (${formatearNumero(gramos)}g)`,
+        cal: redondear(alimentos[i].cal * factor),
+        prot: redondear(alimentos[i].prot * factor),
+        carb: redondear(alimentos[i].carb * factor),
+        fat: redondear(alimentos[i].fat * factor)
+    };
+    
+    alimentosHoy.push(nuevo);
+    mostrarAlimentosHoy();
+    actualizarBarras();
+    guardarMacrosHoy();
+}
+
+function mostrarAlimentosHoy() {
+    let div = document.getElementById('alimentosHoy');
+    div.innerHTML = '';
+    
+    if (alimentosHoy.length === 0) {
+        div.innerHTML = '<p style="text-align:center;color:#999;padding:10px;">No has agregado alimentos hoy</p>';
+        return;
+    }
+    
+    alimentosHoy.forEach((a, i) => {
+        let item = document.createElement('div');
+        item.className = 'food-item';
+        item.innerHTML = `
+            <div class="food-item-header">
+                <span class="food-name">${a.nombre}</span>
+                <button class="action-btn delete" onclick="borrarHoy(${i})" title="Eliminar"></button>
+            </div>
+            <div class="food-macros">
+                <span class="macro-badge"> ${formatearNumero(a.cal)} kcal</span>
+                <span class="macro-badge"> ${formatearNumero(a.prot)}g</span>
+                <span class="macro-badge"> ${formatearNumero(a.carb)}g</span>
+                <span class="macro-badge"> ${formatearNumero(a.fat)}g</span>
+            </div>
+        `;
+        div.appendChild(item);
+    });
+}
+
+function borrarHoy(i) {
+    if (confirm('¿Eliminar este alimento del día?')) {
+        alimentosHoy.splice(i, 1);
+        mostrarAlimentosHoy();
+        actualizarBarras();
+        guardarMacrosHoy();
+    }
+}
+
+// ==================== GUARDAR DÍA ====================
+document.getElementById('guardarDiaBtn').addEventListener('click', () => {
+    guardarMacrosHoy();
+    alert('Día guardado');
+});
+
+function guardarMacrosHoy() {
+    if (!perfilActivo) return;
+    let fecha = new Date();
+    let diaKey = `${perfilActivo.nombre}-${fecha.getFullYear()}-${fecha.getMonth() + 1}-${fecha.getDate()}`;
+    let historial = JSON.parse(localStorage.getItem('historial') || '{}');
+    historial[diaKey] = {
+        alimentos: alimentosHoy.map(a => Object.assign({}, a)),
+        macros: Object.assign({}, macrosDia),
+        agua: agua,
+        aguaMeta: aguaMeta,
+        actividad: tipoDia,
+        horas: horas
+    };
+    localStorage.setItem('historial', JSON.stringify(historial));
+}
+
+function cargarDiaActual() {
+    if (!perfilActivo) return;
+    let fecha = new Date();
+    let diaKey = `${perfilActivo.nombre}-${fecha.getFullYear()}-${fecha.getMonth() + 1}-${fecha.getDate()}`;
+    let historial = JSON.parse(localStorage.getItem('historial') || '{}');
+    
+    if (historial[diaKey]) {
+        let h = historial[diaKey];
+        alimentosHoy = h.alimentos || [];
+        macrosDia = h.macros || { cal: 0, prot: 0, carb: 0, fat: 0 };
+        agua = h.agua || 0;
+        aguaMeta = h.aguaMeta || 2000;
+        tipoDia = h.actividad || '';
+        horas = h.horas || 1;
+        
+        // Actualizar UI
+        if (tipoDia === 'descanso') {
+            document.getElementById('btnDescanso').classList.add('selected');
+            document.getElementById('hoursSection').style.display = 'none';
+        } else if (tipoDia === 'ejercicio') {
+            document.getElementById('btnEjercicio').classList.add('selected');
+            document.getElementById('hoursSection').style.display = 'block';
+            document.getElementById('horasSlider').value = horas;
+            document.getElementById('horasDisplay').textContent = horas;
+        }
+        
+        mostrarAlimentosHoy();
+        actualizarBarras();
+        actualizarCamposManual();
+    } else {
+        // Resetear día
+        alimentosHoy = [];
+        macrosDia = { cal: 0, prot: 0, carb: 0, fat: 0 };
+        agua = 0;
+        tipoDia = '';
+        mostrarAlimentosHoy();
+        actualizarBarras();
+        actualizarCamposManual();
+    }
+}
+
+// ==================== CALENDARIO ====================
+document.getElementById('prevMes').addEventListener('click', () => cambiarMes(-1));
+document.getElementById('nextMes').addEventListener('click', () => cambiarMes(1));
+
+function dibujarCalendario() {
+    let monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    document.getElementById('mesAno').textContent = `${monthNames[calendarioMes]} ${calendarioAno}`;
+    
+    let firstDay = new Date(calendarioAno, calendarioMes, 1).getDay();
+    let daysInMonth = new Date(calendarioAno, calendarioMes + 1, 0).getDate();
+    let container = document.getElementById('calendarDays');
+    container.innerHTML = '';
+    
+    // Espacios vacíos antes del primer día
+    for (let i = 0; i < firstDay; i++) {
+        container.appendChild(document.createElement('div'));
+    }
+    
+    // Días del mes
+    for (let d = 1; d <= daysInMonth; d++) {
+        let dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        dayDiv.textContent = d;
+        
+        // Marcar día actual
+        let hoy = new Date();
+        if (d === hoy.getDate() && 
+            calendarioMes === hoy.getMonth() && 
+            calendarioAno === hoy.getFullYear()) {
+            dayDiv.classList.add('today');
+        }
+        
+        // Verificar si tiene datos
+        if (perfilActivo) {
+            let diaKey = `${perfilActivo.nombre}-${calendarioAno}-${calendarioMes + 1}-${d}`;
+            let historial = JSON.parse(localStorage.getItem('historial') || '{}');
+            if (historial[diaKey]) {
+                dayDiv.classList.add('has-data');
+            }
+        }
+        
+        dayDiv.onclick = () => {
+            selectedDay = d;
+            mostrarResumen(d);
+            dibujarCalendario();
+        };
+        
+        container.appendChild(dayDiv);
+    }
+}
+
+function cambiarMes(v) {
+    calendarioMes += v;
+    if (calendarioMes < 0) {
+        calendarioMes = 11;
+        calendarioAno--;
+    }
+    if (calendarioMes > 11) {
+        calendarioMes = 0;
+        calendarioAno++;
+    }
+    dibujarCalendario();
+}
+
+function mostrarResumen(d) {
+    if (!perfilActivo) {
+        document.getElementById('resumenDia').innerHTML = 
+            '<p style="text-align:center;color:#999;">Selecciona un perfil primero</p>';
+        return;
+    }
+    
+    let historial = JSON.parse(localStorage.getItem('historial') || '{}');
+    let key = `${perfilActivo.nombre}-${calendarioAno}-${calendarioMes + 1}-${d}`;
+    let div = document.getElementById('resumenDia');
+    div.innerHTML = '';
+    
+    if (historial[key]) {
+        let h = historial[key];
+        
+        div.innerHTML = `
+            <div class="summary-header"> ${d} de ${['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][calendarioMes]}</div>
+            
+            <div class="summary-item">
+                <div class="summary-label"> Actividad</div>
+                <div class="summary-value">${h.actividad === 'ejercicio' ? ` Ejercicio (${h.horas}h)` : ' Descanso'}</div>
+            </div>
+            
+            <div class="summary-item">
+                <div class="summary-label"> Macros Objetivo</div>
+                <div class="summary-value">
+                     ${formatearNumero(h.macros.cal)} kcal | 
+                     ${formatearNumero(h.macros.prot)}g | 
+                     ${formatearNumero(h.macros.carb)}g | 
+                     ${formatearNumero(h.macros.fat)}g
+                </div>
+            </div>
+        `;
+        
+        if (h.alimentos && h.alimentos.length > 0) {
+            let calHoy = redondear(h.alimentos.reduce((a, b) => a + b.cal, 0));
+            let protHoy = redondear(h.alimentos.reduce((a, b) => a + b.prot, 0));
+            let carbHoy = redondear(h.alimentos.reduce((a, b) => a + b.carb, 0));
+            let fatHoy = redondear(h.alimentos.reduce((a, b) => a + b.fat, 0));
+            
+            div.innerHTML += `
+                <div class="summary-item">
+                    <div class="summary-label"> Macros Consumidos</div>
+                    <div class="summary-value">
+                         ${formatearNumero(calHoy)} kcal (${Math.round((calHoy/h.macros.cal)*100)}%) | 
+                         ${formatearNumero(protHoy)}g (${Math.round((protHoy/h.macros.prot)*100)}%) | 
+                         ${formatearNumero(carbHoy)}g (${Math.round((carbHoy/h.macros.carb)*100)}%) | 
+                         ${formatearNumero(fatHoy)}g (${Math.round((fatHoy/h.macros.fat)*100)}%)
+                    </div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label"> Alimentos (${h.alimentos.length})</div>
+                    <div class="summary-value">
+                        ${h.alimentos.map(a => `• ${a.nombre}`).join('<br>')}
+                    </div>
+                </div>
+            `;
+        } else {
+            div.innerHTML += `
+                <div class="summary-item">
+                    <div class="summary-value" style="text-align:center;color:#999;">
+                        No se registraron alimentos este día
+                    </div>
+                </div>
+            `;
+        }
+        
+        div.innerHTML += `
+            <div class="summary-item">
+                <div class="summary-label"> Hidratación</div>
+                <div class="summary-value">${formatearNumero(h.agua)} ml / ${formatearNumero(h.aguaMeta || 2000)} ml (${Math.round((h.agua/(h.aguaMeta||2000))*100)}%)</div>
+            </div>
+        `;
+    } else {
+        div.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">No hay datos registrados para este día</p>';
+    }
+}
+</script>
+
+<script>
+/* ==========================================================
+   MEJORAS v2 — se cargan después del script original.
+   Las funciones con el mismo nombre sustituyen a las de arriba.
+   ========================================================== */
+
+let plantillas = JSON.parse(localStorage.getItem('plantillas') || '[]');
+let favoritos  = JSON.parse(localStorage.getItem('favoritos')  || '[]');
+let recientes  = JSON.parse(localStorage.getItem('recientes')  || '[]');
+let pesos      = JSON.parse(localStorage.getItem('pesos')      || '{}');
+let filtroLista = 'todos';
+
+function guardarExtras(){
+  localStorage.setItem('plantillas', JSON.stringify(plantillas));
+  localStorage.setItem('favoritos',  JSON.stringify(favoritos));
+  localStorage.setItem('recientes',  JSON.stringify(recientes));
+  localStorage.setItem('pesos',      JSON.stringify(pesos));
+}
+
+function aviso(t){
+  let el = document.getElementById('toastMsg');
+  if(!el){ el = document.createElement('div'); el.id='toastMsg'; el.className='toast'; document.body.appendChild(el); }
+  el.textContent = t; el.classList.add('on');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(()=>el.classList.remove('on'), 2200);
+}
+
+function claveDia(fecha, nombrePerfil){
+  const p = nombrePerfil || (perfilActivo ? perfilActivo.nombre : '');
+  return `${p}-${fecha.getFullYear()}-${fecha.getMonth()+1}-${fecha.getDate()}`;
+}
+function hoyClave(){ return claveDia(new Date()); }
+
+/* ==========================================================
+   LISTA DE ALIMENTOS: favoritos, recientes y buscador
+   ========================================================== */
+function esFavorito(nombre){ return favoritos.indexOf(nombre) !== -1; }
+
+function alternarFavorito(i){
+  const n = alimentos[i].nombre;
+  const p = favoritos.indexOf(n);
+  if(p === -1) favoritos.push(n); else favoritos.splice(p,1);
+  guardarExtras(); mostrarAlimentos();
+}
+
+function fijarFiltro(f){ filtroLista = f; mostrarAlimentos(); }
+
+function mostrarAlimentos(){
+  const div = document.getElementById('foodList');
+  if(!div) return;
+  div.innerHTML = '';
+
+  const barra = document.getElementById('filtrosAlimentos');
+  if(barra){
+    barra.innerHTML = [
+      ['todos','Todos'],
+      ['favoritos','Favoritos ('+favoritos.length+')'],
+      ['recientes','Recientes']
+    ].map(([k,t])=>`<button class="chip ${filtroLista===k?'on':''}" onclick="fijarFiltro('${k}')">${t}</button>`).join('');
+  }
+
+  if(alimentos.length === 0){
+    div.innerHTML = '<div class="empty-msg">Todavía no hay alimentos guardados.<br>Añade el primero con el botón de arriba.</div>';
+    return;
+  }
+
+  const filtro = (document.getElementById('buscarAlimentoInput').value || '').trim().toLowerCase();
+  let lista = alimentos.map((a,i)=>({a,i}));
+
+  if(filtroLista === 'favoritos') lista = lista.filter(({a})=>esFavorito(a.nombre));
+  if(filtroLista === 'recientes'){
+    lista = lista.filter(({a})=>recientes.indexOf(a.nombre) !== -1)
+                 .sort((x,y)=>recientes.indexOf(x.a.nombre)-recientes.indexOf(y.a.nombre));
+  }
+  if(filtro) lista = lista.filter(({a})=>a.nombre.toLowerCase().includes(filtro));
+
+  if(lista.length === 0){
+    div.innerHTML = '<div class="empty-msg">Nada que mostrar con este filtro.</div>';
+    return;
+  }
+
+  lista.forEach(({a,i})=>{
+    const item = document.createElement('div');
+    item.className = 'food-item';
+    item.innerHTML = `
+      <div class="food-item-header">
+        <span class="food-name">${a.nombre}</span>
+        <div class="food-actions">
+          <button class="action-btn" onclick="alternarFavorito(${i})" title="Favorito">${esFavorito(a.nombre)?'★':'☆'}</button>
+          <button class="action-btn add" onclick="agregarHoy(${i})" title="Añadir">+</button>
+          <button class="action-btn edit" onclick="editarAlimento(${i})" title="Editar">✎</button>
+          <button class="action-btn delete" onclick="borrarAlimento(${i})" title="Borrar">✕</button>
+        </div>
+      </div>
+      <div class="food-macros">
+        <span class="macro-badge">${formatearNumero(a.cal)} kcal</span>
+        <span class="macro-badge">P ${formatearNumero(a.prot)}g</span>
+        <span class="macro-badge">C ${formatearNumero(a.carb)}g</span>
+        <span class="macro-badge">G ${formatearNumero(a.fat)}g</span>
+      </div>`;
+    div.appendChild(item);
+  });
+}
+
+/* ==========================================================
+   AÑADIR AL DÍA con ventana propia en lugar de prompt
+   ========================================================== */
+function agregarHoy(i){
+  const a = alimentos[i];
+  const modal = document.getElementById('modalGramos');
+  document.getElementById('gramosTitulo').textContent = a.nombre;
+  document.getElementById('gramosInput').value = 100;
+  document.getElementById('gramosIdx').value = i;
+  modal.style.display = 'block';
+  actualizarPreviaGramos();
+  setTimeout(()=>{ const el=document.getElementById('gramosInput'); el.focus(); el.select(); }, 120);
+}
+
+function ajustarGramos(d){
+  const el = document.getElementById('gramosInput');
+  let v = (parseFloat(el.value)||0) + d;
+  if(v < 0) v = 0;
+  el.value = Math.round(v*10)/10;
+  actualizarPreviaGramos();
+}
+
+function actualizarPreviaGramos(){
+  const i = parseInt(document.getElementById('gramosIdx').value);
+  const g = parseFloat(document.getElementById('gramosInput').value) || 0;
+  const a = alimentos[i]; if(!a) return;
+  const f = g/100;
+  document.getElementById('gramosPrevia').innerHTML =
+    `<span class="macro-badge">${formatearNumero(redondear(a.cal*f))} kcal</span>
+     <span class="macro-badge">P ${formatearNumero(redondear(a.prot*f))}g</span>
+     <span class="macro-badge">C ${formatearNumero(redondear(a.carb*f))}g</span>
+     <span class="macro-badge">G ${formatearNumero(redondear(a.fat*f))}g</span>`;
+}
+
+function confirmarGramos(){
+  const i = parseInt(document.getElementById('gramosIdx').value);
+  const g = parseFloat(document.getElementById('gramosInput').value);
+  if(isNaN(g) || g <= 0){ aviso('Pon una cantidad válida'); return; }
+  const a = alimentos[i], f = g/100;
+  alimentosHoy.push({
+    nombre: `${a.nombre} (${formatearNumero(g)}g)`,
+    cal: redondear(a.cal*f), prot: redondear(a.prot*f),
+    carb: redondear(a.carb*f), fat: redondear(a.fat*f)
+  });
+  recientes = [a.nombre].concat(recientes.filter(n=>n!==a.nombre)).slice(0,20);
+  guardarExtras();
+  document.getElementById('modalGramos').style.display = 'none';
+  mostrarAlimentosHoy(); actualizarBarras(); guardarMacrosHoy();
+  aviso(`${a.nombre} añadido`);
+}
+
+/* ==========================================================
+   COMIDAS GUARDADAS (plantillas)
+   ========================================================== */
+function guardarComoComida(){
+  if(!alimentosHoy.length){ aviso('No hay alimentos en el día'); return; }
+  const n = prompt('Nombre de la comida guardada (ej. "Desayuno tipo")');
+  if(!n || !n.trim()) return;
+  plantillas.push({ nombre: n.trim(), items: alimentosHoy.map(a=>Object.assign({},a)) });
+  guardarExtras(); pintarComidas();
+  aviso('Comida guardada: ' + n.trim());
+}
+
+function pintarComidas(){
+  const div = document.getElementById('listaComidas');
+  if(!div) return;
+  if(!plantillas.length){
+    div.innerHTML = '<div class="empty-msg">Ninguna comida guardada todavía.<br>Monta un día y pulsa «Guardar como comida».</div>';
+    return;
+  }
+  div.innerHTML = plantillas.map((p,i)=>{
+    const t = p.items.reduce((s,a)=>({cal:s.cal+a.cal, prot:s.prot+a.prot}), {cal:0,prot:0});
+    return `<div class="food-item">
+      <div class="food-item-header">
+        <span class="food-name">${p.nombre}</span>
+        <div class="food-actions">
+          <button class="action-btn add" onclick="aplicarComida(${i})" title="Añadir al día">+</button>
+          <button class="action-btn delete" onclick="borrarComida(${i})" title="Borrar">✕</button>
+        </div>
+      </div>
+      <div class="food-macros">
+        <span class="macro-badge">${p.items.length} alimentos</span>
+        <span class="macro-badge">${formatearNumero(redondear(t.cal))} kcal</span>
+        <span class="macro-badge">P ${formatearNumero(redondear(t.prot))}g</span>
+      </div></div>`;
+  }).join('');
+}
+
+function aplicarComida(i){
+  plantillas[i].items.forEach(a=>alimentosHoy.push(Object.assign({},a)));
+  mostrarAlimentosHoy(); actualizarBarras(); guardarMacrosHoy();
+  aviso(plantillas[i].nombre + ' añadida al día');
+  mostrarTab('tabMacros');
+}
+
+function borrarComida(i){
+  if(!confirm(`¿Borrar la comida "${plantillas[i].nombre}"?`)) return;
+  plantillas.splice(i,1); guardarExtras(); pintarComidas();
+}
+
+/* ==========================================================
+   DUPLICAR UN DÍA DEL HISTORIAL AL DÍA DE HOY
+   ========================================================== */
+function copiarDiaAHoy(clave){
+  const historial = JSON.parse(localStorage.getItem('historial') || '{}');
+  const d = historial[clave];
+  if(!d || !d.alimentos || !d.alimentos.length){ aviso('Ese día no tiene alimentos'); return; }
+  const reemplazar = alimentosHoy.length
+    ? confirm(`Hoy ya tienes ${alimentosHoy.length} alimentos.\n\nAceptar: REEMPLAZAR por los ${d.alimentos.length} de ese día.\nCancelar: AÑADIRLOS a lo que ya tienes.`)
+    : true;
+  if(reemplazar) alimentosHoy = d.alimentos.map(a=>Object.assign({},a));
+  else d.alimentos.forEach(a=>alimentosHoy.push(Object.assign({},a)));
+  mostrarAlimentosHoy(); actualizarBarras(); guardarMacrosHoy();
+  aviso('Día copiado a hoy');
+  mostrarTab('tabMacros');
+}
+
+/* ==========================================================
+   PESO CORPORAL
+   ========================================================== */
+function guardarPeso(){
+  const el = document.getElementById('pesoHoy');
+  const v = parseFloat(el.value);
+  if(isNaN(v) || v <= 0){ aviso('Pon un peso válido'); return; }
+  const f = new Date();
+  pesos[`${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}-${String(f.getDate()).padStart(2,'0')}`] = v;
+  guardarExtras(); el.value = '';
+  pintarTendencias(); aviso('Peso registrado: ' + v + ' kg');
+}
+
+function mediaSemana(obj, desde, hasta){
+  const vals = Object.keys(obj).filter(k=>k>=desde && k<=hasta).map(k=>obj[k]);
+  if(!vals.length) return null;
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+
+/* ==========================================================
+   TENDENCIAS
+   ========================================================== */
+function datosUltimosDias(n){
+  const historial = JSON.parse(localStorage.getItem('historial') || '{}');
+  const out = [];
+  for(let i = n-1; i >= 0; i--){
+    const f = new Date(); f.setDate(f.getDate()-i);
+    const clave = claveDia(f);
+    const d = historial[clave];
+    const iso = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}-${String(f.getDate()).padStart(2,'0')}`;
+    let cal = 0, prot = 0;
+    if(d && d.alimentos){
+      d.alimentos.forEach(a=>{ cal += a.cal||0; prot += a.prot||0; });
+    }
+    out.push({ iso, cal: redondear(cal), prot: redondear(prot), peso: pesos[iso] || null });
+  }
+  return out;
+}
+
+function miniGrafica(valores, color, unidad){
+  const datos = valores.filter(v=>v.y > 0);
+  if(datos.length < 2) return '<div class="empty-msg">Hacen falta al menos dos días con datos.</div>';
+  const W = 320, H = 150, P = 26;
+  const ys = datos.map(d=>d.y);
+  const mn = Math.min(...ys)*0.92, mx = Math.max(...ys)*1.06;
+  const x = i => P + i*(W-P*1.5)/(datos.length-1);
+  const y = v => H-P - ((v-mn)/(mx-mn||1))*(H-P*1.8);
+  const linea = datos.map((d,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(d.y).toFixed(1)}`).join(' ');
+  const area = `${linea} L${x(datos.length-1).toFixed(1)},${H-P} L${x(0).toFixed(1)},${H-P} Z`;
+  const id = 'g'+Math.random().toString(36).slice(2,7);
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    ${[0,.5,1].map(f=>`<line x1="${P}" x2="${W-P*0.5}" y1="${H-P-f*(H-P*1.8)}" y2="${H-P-f*(H-P*1.8)}" stroke="#2A3A45" stroke-width="1"/>`).join('')}
+    <path d="${area}" fill="url(#${id})"/>
+    <path d="${linea}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    ${datos.map((d,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(d.y).toFixed(1)}" r="3" fill="#0E1418" stroke="${color}" stroke-width="2"/>`).join('')}
+    <text x="${P-5}" y="${(y(mx*0.98)+4).toFixed(1)}" fill="#6B7E8B" font-size="9" text-anchor="end">${Math.round(mx)}</text>
+    <text x="${P-5}" y="${H-P}" fill="#6B7E8B" font-size="9" text-anchor="end">${Math.round(mn)}</text>
+  </svg>`;
+}
+
+let rangoTendencia = 14;
+function fijarRango(n){ rangoTendencia = n; pintarTendencias(); }
+
+function pintarTendencias(){
+  const cont = document.getElementById('tendencias');
+  if(!cont) return;
+  if(!perfilActivo){
+    cont.innerHTML = '<div class="empty-msg">Carga un perfil para ver tus tendencias.</div>';
+    return;
+  }
+  const d = datosUltimosDias(rangoTendencia);
+  const conDatos = d.filter(x=>x.cal > 0);
+  const mediaCal  = conDatos.length ? conDatos.reduce((a,b)=>a+b.cal,0)/conDatos.length : 0;
+  const mediaProt = conDatos.length ? conDatos.reduce((a,b)=>a+b.prot,0)/conDatos.length : 0;
+
+  const pesosArr = d.filter(x=>x.peso);
+  let deltaPeso = '—';
+  if(pesosArr.length >= 2){
+    const dif = pesosArr[pesosArr.length-1].peso - pesosArr[0].peso;
+    deltaPeso = (dif>=0?'+':'') + (Math.round(dif*10)/10);
+  }
+
+  cont.innerHTML = `
+    <div class="chips">
+      ${[7,14,30].map(n=>`<button class="chip ${rangoTendencia===n?'on':''}" onclick="fijarRango(${n})">${n} días</button>`).join('')}
+    </div>
+    <div class="stat-row">
+      <div class="stat accent"><div class="v">${Math.round(mediaCal)}</div><div class="l">kcal media</div></div>
+      <div class="stat"><div class="v">${Math.round(mediaProt)}</div><div class="l">g prot. media</div></div>
+      <div class="stat"><div class="v">${deltaPeso}</div><div class="l">kg variación</div></div>
+    </div>
+    <h3>Calorías por día</h3>
+    <div class="chart-box">${miniGrafica(d.map(x=>({y:x.cal})), '#F2913D')}</div>
+    <h3 style="margin-top:18px">Proteína por día</h3>
+    <div class="chart-box">${miniGrafica(d.map(x=>({y:x.prot})), '#E4635A')}</div>
+    ${pesosArr.length>=2?`<h3 style="margin-top:18px">Peso corporal</h3>
+      <div class="chart-box">${miniGrafica(d.map(x=>({y:x.peso||0})), '#4ECB86')}</div>`:''}
+    <div class="hint" style="margin-top:12px">
+      ${conDatos.length} de ${rangoTendencia} días con registro. En superávit lo que importa es la media semanal, no el dato de un día suelto.
+    </div>`;
+}
+
+
+
+/* ==========================================================
+   VISTAS REHECHAS (sustituyen a las originales)
+   ========================================================== */
+function mostrarAlimentosHoy(){
+  const div = document.getElementById('alimentosHoy');
+  if(!div) return;
+  if(!alimentosHoy.length){
+    div.innerHTML = '<div class="empty-msg">Ningún alimento registrado hoy.</div>';
+    return;
+  }
+  const t = alimentosHoy.reduce((s,a)=>({cal:s.cal+a.cal,prot:s.prot+a.prot,carb:s.carb+a.carb,fat:s.fat+a.fat}),{cal:0,prot:0,carb:0,fat:0});
+  div.innerHTML = alimentosHoy.map((a,i)=>`
+    <div class="food-item">
+      <div class="food-item-header">
+        <span class="food-name">${a.nombre}</span>
+        <div class="food-actions">
+          <button class="action-btn delete" onclick="borrarHoy(${i})" title="Eliminar">✕</button>
+        </div>
+      </div>
+      <div class="food-macros">
+        <span class="macro-badge">${formatearNumero(a.cal)} kcal</span>
+        <span class="macro-badge">P ${formatearNumero(a.prot)}g</span>
+        <span class="macro-badge">C ${formatearNumero(a.carb)}g</span>
+        <span class="macro-badge">G ${formatearNumero(a.fat)}g</span>
+      </div>
+    </div>`).join('') + `
+    <div class="summary-item" style="padding-top:12px">
+      <div class="summary-label">Total del día (${alimentosHoy.length})</div>
+      <div class="summary-value">${formatearNumero(redondear(t.cal))} kcal · P ${formatearNumero(redondear(t.prot))} · C ${formatearNumero(redondear(t.carb))} · G ${formatearNumero(redondear(t.fat))}</div>
+    </div>`;
+}
+
+function mostrarResumen(d){
+  const div = document.getElementById('resumenDia');
+  if(!div) return;
+  if(!perfilActivo){ div.innerHTML = '<div class="empty-msg">Carga un perfil primero.</div>'; return; }
+
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const historial = JSON.parse(localStorage.getItem('historial') || '{}');
+  const key = `${perfilActivo.nombre}-${calendarioAno}-${calendarioMes+1}-${d}`;
+  const h = historial[key];
+
+  if(!h){
+    div.innerHTML = `<div class="summary-header">${d} de ${meses[calendarioMes]}</div>
+      <div class="empty-msg">Sin registro este día.</div>`;
+    return;
+  }
+
+  const pct = (x,m)=> m ? Math.round(x/m*100) : 0;
+  let html = `<div class="summary-header">${d} de ${meses[calendarioMes]}</div>
+    <div class="summary-item">
+      <div class="summary-label">Actividad</div>
+      <div class="summary-value">${h.actividad === 'ejercicio' ? `Ejercicio · ${h.horas} h` : 'Descanso'}</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Objetivo</div>
+      <div class="summary-value">${formatearNumero(h.macros.cal)} kcal · P ${formatearNumero(h.macros.prot)} · C ${formatearNumero(h.macros.carb)} · G ${formatearNumero(h.macros.fat)}</div>
+    </div>`;
+
+  if(h.alimentos && h.alimentos.length){
+    const c = h.alimentos.reduce((s,a)=>({cal:s.cal+a.cal,prot:s.prot+a.prot,carb:s.carb+a.carb,fat:s.fat+a.fat}),{cal:0,prot:0,carb:0,fat:0});
+    Object.keys(c).forEach(k=>c[k]=redondear(c[k]));
+    html += `
+      <div class="summary-item">
+        <div class="summary-label">Consumido</div>
+        <div class="summary-value">${formatearNumero(c.cal)} kcal (${pct(c.cal,h.macros.cal)}%)</div>
+      </div>
+      <div style="margin:12px 0">
+        ${[['Calorías',c.cal,h.macros.cal,'cal-fill'],['Proteínas',c.prot,h.macros.prot,'prot-fill'],
+           ['Carbohidratos',c.carb,h.macros.carb,'carb-fill'],['Grasas',c.fat,h.macros.fat,'fat-fill']]
+          .map(([n,v,m,cl])=>`
+            <div class="progress-item">
+              <div class="progress-header"><span>${n}</span><span>${formatearNumero(v)} / ${formatearNumero(m)} · ${pct(v,m)}%</span></div>
+              <div class="progress-bar-container"><div class="progress-bar-fill ${cl}" style="width:${Math.min(100,pct(v,m))}%"></div></div>
+            </div>`).join('')}
+      </div>
+      <div class="summary-item" style="display:block">
+        <div class="summary-label" style="margin-bottom:8px">Alimentos (${h.alimentos.length})</div>
+        <div class="food-macros" style="flex-direction:column;align-items:flex-start;gap:4px">
+          ${h.alimentos.map(a=>`<span class="macro-badge">${a.nombre} · ${formatearNumero(a.cal)} kcal</span>`).join('')}
+        </div>
+      </div>
+      <button class="btn-secondary" style="margin-top:14px" onclick="copiarDiaAHoy('${key}')">Copiar este día a hoy</button>`;
+  }else{
+    html += '<div class="empty-msg">No se registraron alimentos este día.</div>';
+  }
+
+  if(h.agua){
+    html += `<div class="summary-item"><div class="summary-label">Hidratación</div>
+      <div class="summary-value">${h.agua} / ${h.aguaMeta || 2000} ml</div></div>`;
+  }
+  div.innerHTML = html;
+}
+
+/* ==========================================================
+   COPIA DE SEGURIDAD
+   ========================================================== */
+function exportarTodo(){
+  try{
+    const datos = {
+      app:"Macros", version:2, exportado:new Date().toISOString(),
+      alimentos: JSON.parse(localStorage.getItem('alimentos')||'[]'),
+      perfiles:  JSON.parse(localStorage.getItem('perfiles') ||'[]'),
+      historial: JSON.parse(localStorage.getItem('historial')||'{}'),
+      plantillas, favoritos, recientes, pesos
+    };
+    const blob = new Blob([JSON.stringify(datos,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'macros-copia-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+    document.getElementById('avisoBackup').textContent =
+      `Descargado: ${datos.alimentos.length} alimentos, ${datos.perfiles.length} perfiles, ` +
+      `${Object.keys(datos.historial).length} días y ${plantillas.length} comidas guardadas.`;
+  }catch(e){ aviso('No se pudo exportar: '+e.message); }
+}
+
+function importarTodo(input){
+  const f = input.files[0]; if(!f) return;
+  const lector = new FileReader();
+  lector.onload = function(){
+    try{
+      const d = JSON.parse(lector.result);
+      if(!d.alimentos && !d.perfiles && !d.historial){ aviso('Ese archivo no es una copia de esta app'); return; }
+      const actuales = JSON.parse(localStorage.getItem('alimentos')||'[]');
+      const fusionar = confirm(
+        `El archivo trae ${(d.alimentos||[]).length} alimentos.\n\n` +
+        `Aceptar: FUSIONAR con los ${actuales.length} que ya tienes.\n` +
+        `Cancelar: REEMPLAZAR todo por el archivo.`);
+
+      if(fusionar){
+        const nombres = new Set(actuales.map(a=>(a.nombre||'').toLowerCase().trim()));
+        (d.alimentos||[]).forEach(a=>{ if(!nombres.has((a.nombre||'').toLowerCase().trim())) actuales.push(a); });
+        localStorage.setItem('alimentos', JSON.stringify(actuales));
+
+        const perf = JSON.parse(localStorage.getItem('perfiles')||'[]');
+        const pn = new Set(perf.map(p=>(p.nombre||'').toLowerCase().trim()));
+        (d.perfiles||[]).forEach(p=>{ if(!pn.has((p.nombre||'').toLowerCase().trim())) perf.push(p); });
+        localStorage.setItem('perfiles', JSON.stringify(perf));
+
+        const h = JSON.parse(localStorage.getItem('historial')||'{}');
+        Object.assign(h, d.historial||{});
+        localStorage.setItem('historial', JSON.stringify(h));
+
+        const pl = new Set(plantillas.map(p=>p.nombre.toLowerCase()));
+        (d.plantillas||[]).forEach(p=>{ if(!pl.has((p.nombre||'').toLowerCase())) plantillas.push(p); });
+        (d.favoritos||[]).forEach(n=>{ if(favoritos.indexOf(n)===-1) favoritos.push(n); });
+        Object.assign(pesos, d.pesos||{});
+      }else{
+        localStorage.setItem('alimentos', JSON.stringify(d.alimentos||[]));
+        localStorage.setItem('perfiles',  JSON.stringify(d.perfiles ||[]));
+        localStorage.setItem('historial', JSON.stringify(d.historial||{}));
+        plantillas = d.plantillas||[]; favoritos = d.favoritos||[];
+        recientes = d.recientes||[]; pesos = d.pesos||{};
+      }
+      guardarExtras();
+      document.getElementById('avisoBackup').textContent = 'Datos importados. Recargando…';
+      setTimeout(()=>location.reload(), 900);
+    }catch(e){ aviso('Archivo no válido: '+e.message); }
+  };
+  lector.readAsText(f); input.value='';
+}
+
+/* ==========================================================
+   AL ARRANCAR
+   ========================================================== */
+(function iniciarV2(){
+  // refrescar las vistas con las funciones nuevas
+  try{ mostrarAlimentos(); }catch(e){}
+  try{ pintarComidas(); }catch(e){}
+  try{ pintarTendencias(); }catch(e){}
+
+  // marcar la pestaña activa en la barra inferior
+  const botones = document.querySelectorAll('.bottom-bar button');
+  const orden = ['tabPerfil','tabMacros','tabAlimentos','tabHistorial'];
+  function marcar(){
+    const actual = document.querySelector('.tab.active');
+    botones.forEach((b,i)=>b.classList.toggle('active', actual && orden[i]===actual.id));
+  }
+  botones.forEach(b=>b.addEventListener('click', ()=>setTimeout(()=>{ marcar(); pintarTendencias(); }, 30)));
+  marcar();
+
+  document.getElementById('gramosInput').addEventListener('input', actualizarPreviaGramos);
+})();
+
+</script>
+</body>
+</html>
